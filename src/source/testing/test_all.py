@@ -1464,7 +1464,7 @@ class TestRoutes(unittest.TestCase):
             statuscode = response.status_code
             print(statuscode)
             self.assertEqual(statuscode, 200)
-            pathData = pathlib.Path(__file__).parents[3] / "upload_dataset" / current_user.email / str(
+            pathData = pathlib.Path.home() / "QMLdata" / current_user.email / str(
                 Dataset.query.filter_by(
                     email_user=current_user.email).order_by(
                     desc(

@@ -89,7 +89,8 @@ class UtenteControl:
         db.session.add(utente)
         db.session.commit()
 
-        path = Path(__file__).parents[3] / "upload_dataset" / email
+        path = Path.home() / "QMLdata" / email
+
         print(path.__str__())
         if not path.is_dir():
             path.mkdir()
@@ -149,8 +150,7 @@ class UtenteControl:
     def download():
         ID = request.form.get("id")
         filename = request.form.get("filename")
-        filepath = Path(__file__).parents[3] / \
-            "upload_dataset" / current_user.email / ID
+        filepath = Path.home() / "QMLdata" / current_user.email / ID
         print(filename)
 
         if filename:

@@ -806,8 +806,8 @@ def upload(file, file1, file2, idTrainSet):
     if file is None:
         return -1
     uploaddir = (
-            pathlib.Path(__file__).parents[1]
-            / "upload_dataset"
+            pathlib.Path.home()
+            / "QMLdata"
             / current_user.email
             / str(idTrainSet)
     )

@@ -1,9 +1,9 @@
-
 from flask import Flask
 from flask_ckeditor import CKEditor
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import database_exists, create_database
+from pathlib import Path
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root@127.0.0.1/quantumknn_db"
@@ -27,6 +27,11 @@ else:
     with app.app_context():
         db.create_all()
 
+# Create QML data folder if it does not exists
+data_path = Path.home() / "QMLdata"
+
+if not data_path.is_dir():
+    data_path.mkdir()
 
 from src.source.classificazioneDataset import ClassifyControl
 from src.source.preprocessingDataset import PreprocessingControl
