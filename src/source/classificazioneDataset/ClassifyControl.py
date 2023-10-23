@@ -26,6 +26,7 @@ from src.source.classificazioneDataset.myQSVM import myQSVM
 from src.source.classificazioneDataset.myQSVR import myQSVR
 from src.source.model.models import Dataset, User
 from src.source.utils import utils
+from src.source.utils.encryption import encrypt
 
 warnings.simplefilter(action="ignore", category=DeprecationWarning)
 
@@ -147,6 +148,11 @@ class ClassificazioneControl:
         if result != 0:
             ClassificazioneControl.get_classified_dataset(
                 self, result, path_prediction, email, model, backend)
+
+        # Encryption of all files in the experiment folder
+        user = User.query.filter_by(email=user_id).first()
+        encrypt(pathlib.Path(path_prediction).parent, user.key)
+
         return result
 
     def classify(
