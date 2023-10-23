@@ -30,27 +30,26 @@ def decrypt(path, key):
 
     for root, dirs, files in os.walk(data_directory):
         for file in files:
-            # file_path = os.path.join(root, file)
             file_name = str(file)[:-4]
-            print(file_name)
+            file_path = root / file_name
 
             encrypted_data = file.read()
             decrypted_data = fernet.decrypt(encrypted_data)
 
             # PNG file
             if "graph" in file_name:
-                with open(file_name + '.png', 'wb') as original_file:
+                with open(file_path + '.png', 'wb') as original_file:
                     original_file.write(decrypted_data)
             # XLSX file
             elif "xlsx" in file_name:
-                with open(file_name + '.xlsx', 'wb') as original_file:
+                with open(file_path + '.xlsx', 'wb') as original_file:
                     original_file.write(decrypted_data)
             # TXT file
             elif "txt" in file_name:
-                with open(file_name + '.txt', 'wb') as original_file:
+                with open(file_path + '.txt', 'wb') as original_file:
                     original_file.write(decrypted_data)
             # CSV file
             else:
                 # transformed_data = (str(decrypted_data)[2:-1]).replace('\\t', ',').replace('\\n', '\n')
-                with open(file_name + '.csv', 'wb') as original_file:
+                with open(file_path + '.csv', 'wb') as original_file:
                     original_file.write(decrypted_data)
