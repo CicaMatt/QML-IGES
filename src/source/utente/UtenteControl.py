@@ -189,18 +189,17 @@ class UtenteControl:
         msg.attach(
             MIMEText(
                 "<center><h4>Verification Code:<t>" + verification_code, 'html'))
-        print("Verification Code: ", verification_code)
-        # try:
-        #     recipients = ['quantumoonlight@gmail.com', email]
-        #     session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
-        #     session.ehlo()
-        #     session.starttls()  # enable security
-        #     session.login("quantumoonlight@gmail.com", "erkz pqec tbra duzo")  # login with mail_id and password
-        #     session.sendmail("quantumoonlight@gmail.com", recipients, msg.__str__())
-        #     session.quit()
-        # except BaseException as e:
-        #     print(e.with_traceback())
-        #     return  abort(500, "Cannot send email")
+        try:
+            recipients = ['quantumoonlight@gmail.com', email]
+            session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+            session.ehlo()
+            session.starttls()  # enable security
+            session.login("quantumoonlight@gmail.com", "erkz pqec tbra duzo")  # login with mail_id and password
+            session.sendmail("quantumoonlight@gmail.com", recipients, msg.__str__())
+            session.quit()
+        except BaseException as e:
+            print(e.with_traceback())
+            return  abort(500, "Cannot send email")
         return jsonify({'verification_code': verification_code})
 
 
