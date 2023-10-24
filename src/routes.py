@@ -18,6 +18,7 @@ from src.source.preprocessingDataset import callPS
 from src.source.preprocessingDataset.aggId import addId
 from src.source.utils import addAttribute
 from src.source.utils import utils
+from src.source.utils.encryption import encrypt
 
 
 @app.route("/")
@@ -809,11 +810,15 @@ def upload(file, file1, file2, idTrainSet):
     if file is None:
         return -1
     uploaddir = (
-            pathlib.Path(__file__).parents[1]
-            / "upload_dataset"
+            pathlib.Path.home()
+            / "QMLdata"
             / current_user.email
-            / str(idTrainSet)
     )
+
+    print(uploaddir)
+    if not uploaddir.exists():
+        uploaddir.mkdir()
+    uploaddir = uploaddir / str(idTrainSet)
     if not uploaddir.exists():
         uploaddir.mkdir()
     userpath = uploaddir / os.path.basename(pathlib.Path(file.filename))

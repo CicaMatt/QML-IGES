@@ -199,8 +199,8 @@ def runGeneticAlgorithm(
             + "_"
             + str(tournsize)
     )
-    xlsFileName = reportName + ".xlsx"
-    txtFileName = reportName + ".txt"
+    xlsFileName = reportName + "_xlsx.xlsx"
+    txtFileName = reportName + "_txt.txt"
     utils.writeXls(dataPath / xlsFileName, gens, evaluations, bestFits, times)
     utils.writeTxt(dataPath / txtFileName, bestInds)
 

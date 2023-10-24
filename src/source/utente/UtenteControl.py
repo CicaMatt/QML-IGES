@@ -8,6 +8,7 @@ from os.path import exists
 from pathlib import Path
 from zipfile import ZipFile
 
+from cryptography.fernet import Fernet
 from flask import request, render_template, flash, send_from_directory
 from flask_login import login_user, logout_user, current_user
 from qiskit import IBMQ
@@ -75,6 +76,7 @@ class UtenteControl:
             return render_template("registration.html")
 
         group = request.form.get("group")
+
         utente = User(
             email=email,
             password=hashed_password,
@@ -83,13 +85,15 @@ class UtenteControl:
             name=Name,
             surname=cognome,
             isResearcher=bool(isResearcher),
-            group=group
+            group=group,
+            key=Fernet.generate_key()
         )
 
         db.session.add(utente)
         db.session.commit()
 
-        path = Path(__file__).parents[3] / "upload_dataset" / email
+        path = Path.home() / "QMLdata" / email
+
         print(path.__str__())
         if not path.is_dir():
             path.mkdir()
@@ -149,8 +153,7 @@ class UtenteControl:
     def download():
         ID = request.form.get("id")
         filename = request.form.get("filename")
-        filepath = Path(__file__).parents[3] / \
-            "upload_dataset" / current_user.email / ID
+        filepath = Path.home() / "QMLdata" / current_user.email / ID
         print(filename)
 
         if filename:

@@ -18,6 +18,7 @@ class User(db.Model, UserAuth):
     newsletter = db.Column(db.Boolean, default=False)
     isResearcher = db.Column(db.Boolean, default=False)
     group = db.Column(db.String(50), nullable=True, unique=False)
+    key = db.Column(db.String(45), nullable=True, unique=False)
 
     def has_liked_post(self, post):
         return Like.query.filter(
