@@ -22,7 +22,6 @@ from src.source.classificazioneDataset.myNeuralNetworkClassifier import myNeural
 from src.source.classificazioneDataset.myNeuralNetworkRegressor import myNeuralNetworkRegressor
 from src.source.classificazioneDataset.myPegasosQSVC import myPegasosQSVC
 from src.source.classificazioneDataset.myQSVC import myQSVC
-from src.source.classificazioneDataset.myQSVM import myQSVM
 from src.source.classificazioneDataset.myQSVR import myQSVR
 from src.source.model.models import Dataset, User
 from src.source.utils import utils
@@ -197,7 +196,7 @@ class ClassificazioneControl:
             Researcher = False
 
         global backend
-        if model == "QSVM" or model == "QSVC" or model == "Pegasos QSVC" or model == "QSVR" or model == "Quantum Neural Network" or model == "VQR":
+        if model == "QSVC" or model == "Pegasos QSVC" or model == "QSVR" or model == "Quantum Neural Network" or model == "VQR":
             try:
                 IBMQ.enable_account(token)
                 if Researcher:
@@ -250,17 +249,7 @@ class ClassificazioneControl:
                 print("backend selected: simulator")
                 print("backend qubit: 32")
 
-        if model == "QSVM":
-            r = myQSVM.classify(
-                path_train,
-                path_test,
-                user_path_to_predict,
-                backend,
-                features,
-                qubit)
-            result = {**result, **r}
-
-        elif model == "Pegasos QSVC":
+        if model == "Pegasos QSVC":
             r = myPegasosQSVC.classify(
                 path_train,
                 path_test,
@@ -363,8 +352,7 @@ class ClassificazioneControl:
             )
             prediction_file = open(user_path_to_predict, "r")
             rows = prediction_file.readlines()
-            if model != "QSVM":
-                rows.pop(0)
+            rows.pop(0)
 
             for j in range(1, utils.numberOfColumns(user_path_to_predict) + 1):
                 classified_file.write("feature" + str(j) + ",")
