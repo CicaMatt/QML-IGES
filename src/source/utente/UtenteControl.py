@@ -2,6 +2,7 @@ import hashlib
 import itertools
 import os
 import pathlib
+import random
 import re
 import smtplib
 from datetime import timedelta
@@ -11,7 +12,6 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from os.path import exists
 from pathlib import Path
-from random import random
 from zipfile import ZipFile
 
 from cryptography.fernet import Fernet
@@ -21,7 +21,7 @@ from qiskit import IBMQ
 
 from src import app, db
 from src.source.model.models import User
-from src.source.utils.encryption import decrypt
+from src.source.utils.encryption import decrypt, encrypt
 
 
 class UtenteControl:
@@ -199,9 +199,8 @@ class UtenteControl:
             session.quit()
         except BaseException as e:
             print(e.with_traceback())
-            return  abort(500, "Cannot send email")
+            return abort(500, "Cannot send email")
         return jsonify({'verification_code': verification_code})
-
 
     @app.route("/newsletter", methods=["GET", "POST"])
     def signup_newsletter():
@@ -236,10 +235,10 @@ class UtenteControl:
                 zip_name = 'ValidationResult.zip'
                 zip = ZipFile(zip_path, 'w')
                 if exists(
-                    filepath /
-                    "Data_training.csv") and exists(
                         filepath /
-                        "Data_testing.csv"):
+                        "Data_training.csv") and exists(
+                    filepath /
+                    "Data_testing.csv"):
                     zip.write(
                         filepath / "Data_training.csv",
                         "data_training.csv")
@@ -263,10 +262,10 @@ class UtenteControl:
                 zip_name = 'PreprocessingResult.zip'
                 zip = ZipFile(zip_path, 'w')
                 if exists(
-                    filepath /
-                    "DataSetTestPreprocessato.csv") and exists(
                         filepath /
-                        "DataSetTrainPreprocessato.csv"):
+                        "DataSetTestPreprocessato.csv") and exists(
+                    filepath /
+                    "DataSetTrainPreprocessato.csv"):
                     zip.write(
                         filepath / 'DataSetTestPreprocessato.csv',
                         'DataSetTestPreprocessato.csv')
@@ -282,10 +281,10 @@ class UtenteControl:
                         filepath / 'reducedTrainingPS.csv',
                         'reducedTrainingPS.csv')
                 if exists(
-                    filepath /
-                    "Test_Feature_Extraction.csv") and exists(
                         filepath /
-                        "Train_Feature_Extraction.csv"):
+                        "Test_Feature_Extraction.csv") and exists(
+                    filepath /
+                    "Train_Feature_Extraction.csv"):
                     zip.write(
                         filepath / 'Test_Feature_Extraction.csv',
                         'Test_Feature_Extraction.csv')
@@ -333,7 +332,6 @@ class UtenteControl:
                 "error")
             return render_template("downloadPage.html")
 
-
     @app.route("/experimentDownload", methods=["GET", "POST"])
     def experimentDownload():
         id = request.form.get("param")
@@ -343,15 +341,16 @@ class UtenteControl:
 
         zip_name = 'Experiment_' + str(id) + '.zip'
         zip_path = filepath
-        zip = ZipFile(zip_path / zip_name, 'w')
+        zipFile = ZipFile(zip_path / zip_name, 'w')
 
         for root, dirs, files in os.walk(filepath):
             for file in files:
-                if ".zip" in str(file):
+                if os.path.splitext(file)[1] == ".dat" or os.path.splitext(file)[1] == ".zip":
                     continue
                 file_name = str(file)
-                zip.write(filepath / file_name, file_name)
+                zipFile.write(filepath / file_name, file_name)
+                os.remove(os.path.join(root, file))
 
-        zip.close()
+        zipFile.close()
 
         return send_file(filepath / zip_name, as_attachment=True, download_name=zip_name)
