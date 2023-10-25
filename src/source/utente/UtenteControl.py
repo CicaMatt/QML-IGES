@@ -1,16 +1,18 @@
-import collections
 import hashlib
 import itertools
-import json
-import os
 import re
+import smtplib
 from datetime import timedelta
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate
 from os.path import exists
 from pathlib import Path
 from zipfile import ZipFile
 
 from cryptography.fernet import Fernet
-from flask import request, render_template, flash, send_from_directory, send_file
+from flask import request, render_template, flash, send_from_directory, jsonify, abort
 from flask_login import login_user, logout_user, current_user
 from qiskit import IBMQ
 
@@ -133,6 +135,70 @@ class UtenteControl:
         """
         logout_user()
         return render_template("index.html")
+
+    @app.route("/SetNewPW", methods=["GET", "POST"])
+    def SetNewPW():
+        """
+        logs a user out, changing his state from logged user to anonymous user
+            :return:redirect to index page
+        """
+        password = request.form.get("pw")
+        email = request.form.get("email")
+        hashed_password = hashlib.sha512(password.encode()).hexdigest()
+        utente = User.query.filter_by(email=email).first()
+        if utente:
+            utente.password = hashed_password
+            db.session.commit()
+        return render_template("index.html")
+
+    @app.route("/sendCode", methods=["GET", "POST"])
+    def resetPW():
+        """
+        send Verification Code
+            :return: redirect to preview page
+        """
+        email = request.form.get('email')
+        utente = User.query.filter_by(email=email).first()
+        if utente is None:
+            abort(400, "No user found associated with the email")
+        verification_code = str(random.randint(100000, 999999))
+
+        msg = MIMEMultipart()
+        msg["From"] = "quantumoonlight@gmail.com"
+        msg["To"] = "lucacontrasto@gmail.com"
+        msg["Date"] = formatdate(localtime=True)
+        msg["Subject"] = "Verification Code"
+
+        msg.attach(
+            MIMEText(
+                '<td><center><img style="width:25%;" src="cid:image"></center></td>',
+                'html'))
+        img_path = open(
+            pathlib.Path(__file__).parents[2] /
+            "static" /
+            "images" /
+            "logos" /
+            "Logo_SenzaScritta.png",
+            "rb")
+        img = MIMEImage(img_path.read())
+        img.add_header('Content-ID', '<image>')
+        msg.attach(img)
+        msg.attach(
+            MIMEText(
+                "<center><h4>Verification Code:<t>" + verification_code, 'html'))
+        try:
+            recipients = ['quantumoonlight@gmail.com', email]
+            session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+            session.ehlo()
+            session.starttls()  # enable security
+            session.login("quantumoonlight@gmail.com", "erkz pqec tbra duzo")  # login with mail_id and password
+            session.sendmail("quantumoonlight@gmail.com", recipients, msg.__str__())
+            session.quit()
+        except BaseException as e:
+            print(e.with_traceback())
+            return  abort(500, "Cannot send email")
+        return jsonify({'verification_code': verification_code})
+
 
     @app.route("/newsletter", methods=["GET", "POST"])
     def signup_newsletter():

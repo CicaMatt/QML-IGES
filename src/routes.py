@@ -31,6 +31,9 @@ def homepage():  # put application's code here
 def loginPage():
     return render_template("login.html")
 
+@app.route("/resetPwPage")
+def resetPwPage():
+    return render_template("resetPwPage.html")
 
 @app.route("/SignIn")
 def registrationPage():
@@ -398,7 +401,7 @@ def aboutUs():
 @login_required
 def smista():
     print("\nIn smista carico le richieste dal form...")
-    quantum_backends = ['QSVM', "PegasosQSVC", "QuantumNeuralNetwork", "QSVC"]
+    quantum_backends = [ "PegasosQSVC", "QuantumNeuralNetwork", "QSVC"]
     dataset_train = request.files.get("dataset_train")
     dataset_test = request.files.get("dataset_test")
     dataset_prediction = request.files.get("dataset_prediction")
@@ -756,7 +759,7 @@ def smista():
             userpathToPredict = dataPath / "doPredictionFE.csv"
             features = utils.createFeatureList(
                 utils.numberOfColumns(userpathToPredict)
-            )  # lista di features per la qsvm
+            )  # lista di features per ricavare il numero di qubit
         else:
             features = utils.createFeatureList(
                 utils.numberOfColumns(userpathTrain) - 1
