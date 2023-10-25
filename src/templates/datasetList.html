@@ -11,215 +11,240 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-                <script type="text/javascript">
-                        // COLLAPSE BUTTON
-                    function collapse(){
-                              var coll = document.getElementsByClassName("collapsible");
-                     var i;
-                     for (i = 0; i < coll.length; i++) {
-                         coll[i].addEventListener("click", function() {
-                            this.classList.toggle("active");
-                            var content = this.nextElementSibling;
-                            if (content.style.maxHeight){
-                                content.style.maxHeight = null;
-                            } else {
-                                content.style.maxHeight = content.scrollHeight + "px";
-                             }
-                      });
-                    }}
+    <script>
+        $(document).ready(function() {
+          // Aggiungi un gestore di eventi per il clic su bottoni con un certo ID
+          $('button[name="downloadExperiment"]').click(function() {
+            var id = $(this).attr('value'); // Ottieni l'ID del bottone
+            var dataToSend = { param: id }
+            // Invia una richiesta GET al server con il parametro
+             $.ajax({
+                type: 'POST',
+                url: '/experimentDownload',
+                data: dataToSend,
+                success: function(response) {
+                    console.log('Risposta dal server:', response);
+                    var blob = new Blob([response], { type: 'application/zip' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Experiment_' + id +'.zip';  // Sostituisci con il nome desiderato del file
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                  console.error('Errore nella richiesta:', textStatus, errorThrown);
+                }
+              });
+          });
+        });
+    </script>
+    <script type="text/javascript">
+        function collapse(){
+             var coll = document.getElementsByClassName("collapsible");
+             var i;
+             for (i = 0; i < coll.length; i++) {
+                 coll[i].addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    var content = this.nextElementSibling;
+                    if (content.style.maxHeight){
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                     }
+              });
+            }
+        }
 
-                     function checkBoxLimit() {
-                            var checkBoxGroup = document.forms['formDatasets']['selectedDataset'];
-                            var limit = 2;
-                            for (var i = 0; i < checkBoxGroup.length; i++) {
-                                checkBoxGroup[i].onclick = function() {
-                                    var checkedcount = 0;
-                                    for (var i = 0; i < checkBoxGroup.length; i++) {
-                                        checkedcount += (checkBoxGroup[i].checked) ? 1 : 0;
-                                    }
-                                    if (checkedcount > limit) {
-                                        alert("You can select maximum of " + limit + " checkboxes.");
-                                        this.checked = false;
-                                    }
-                                }
-                            }
+         function checkBoxLimit() {
+                var checkBoxGroup = document.forms['formDatasets']['selectedDataset'];
+                var limit = 2;
+                for (var i = 0; i < checkBoxGroup.length; i++) {
+                    checkBoxGroup[i].onclick = function() {
+                        var checkedcount = 0;
+                        for (var i = 0; i < checkBoxGroup.length; i++) {
+                            checkedcount += (checkBoxGroup[i].checked) ? 1 : 0;
                         }
-
-                </script>
+                        if (checkedcount > limit) {
+                            alert("You can select maximum of " + limit + " checkboxes.");
+                            this.checked = false;
+                        }
+                    }
+                }
+            }
+    </script>
 
     <style>
+        h1 {
+          color: white;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          font-weight: bold;
+          margin-left: auto;
+          margin-right: auto;}
 
-                h1 {
-                  color: white;
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-                  font-weight: bold;
-                  margin-left: auto;
-                  margin-right: auto;}
+        .intestazione{
+            background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
+            background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
+            background: linear-gradient(to right, #000080 0%, #4B0082 100%);
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+            color: white;}
 
-                .intestazione{
-                    background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
-                    background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
-                    background: linear-gradient(to right, #000080 0%, #4B0082 100%);
-                    padding-top: 0.5em;
-                    padding-bottom: 0.5em;
-                    color: white;}
+        .graph{
+            float: left;
+            width: 33.3%;
+        }
 
-                .graph{
-                    float: left;
-                    width: 33.3%;
-                }
+        .graph-container{
+            margin-top: 30px;
+            width: 100%;
+            border: none;
+            text-align: center;
+            margin-top: 50px;
+        }
 
-                .graph-container{
-                    margin-top: 30px;
-                    width: 100%;
-                    border: none;
-                    text-align: center;
-                    margin-top: 50px;
-                }
+        div.divTable {
+              border: 2px solid #FFFFFF;
+              width: 100%;
+              text-align: center;
+              border-collapse: collapse;
+        }
 
-                div.divTable {
-                      border: 2px solid #FFFFFF;
-                      width: 100%;
-                      text-align: center;
-                      border-collapse: collapse;
-                }
+        .divTable.divTable .divTableCell, .divTable.divTable .divTableHead {
+              border: 1px solid #FFFFFF;
+              padding: 4px 5px;
+        }
 
-                .divTable.divTable .divTableCell, .divTable.divTable .divTableHead {
-                      border: 1px solid #FFFFFF;
-                      padding: 4px 5px;
-                }
+        .divTable.divTable .divTableBody .divTableCell {
+              font-size: 13px;
+            }
 
-                .divTable.divTable .divTableBody .divTableCell {
-                      font-size: 13px;
-                    }
+        .divTable.divTable .divTableCell:nth-child(even) {
+              background: #EBEBEB;
+            }
 
-                .divTable.divTable .divTableCell:nth-child(even) {
-                      background: #EBEBEB;
-                    }
+        .divTable.divTable .divTableHeading {
+              background: #FFFFFF;
+              border-bottom: 4px solid #333333;
+            }
 
-                .divTable.divTable .divTableHeading {
-                      background: #FFFFFF;
-                      border-bottom: 4px solid #333333;
-                    }
+        .divTable.divTable .divTableHeading .divTableHead {
+              font-size: 15px;
+              font-weight: bold;
+              color: #333333;
+              text-align: center;
+              border-left: 2px solid #333333;
+            }
 
-                .divTable.divTable .divTableHeading .divTableHead {
-                      font-size: 15px;
-                      font-weight: bold;
-                      color: #333333;
-                      text-align: center;
-                      border-left: 2px solid #333333;
-                    }
+        .divTable.divTable .divTableHeading .divTableHead:first-child {
+              border-left: none;
+            }
 
-                .divTable.divTable .divTableHeading .divTableHead:first-child {
-                      border-left: none;
-                    }
+        .divTable {
+              font-size: 14px;
+            }
 
-                .divTable {
-                      font-size: 14px;
-                    }
+        .divTable{ display: table; }
+        .divTableRow { display: table-row; }
+        .divTableHeading { display: table-header-group;}
+        .divTableCell, .divTableHead { display: table-cell;}
+        .divTableHeading { display: table-header-group;}
+        .divTableBody { display: table-row-group;}
 
-                .divTable{ display: table; }
-                .divTableRow { display: table-row; }
-                .divTableHeading { display: table-header-group;}
-                .divTableCell, .divTableHead { display: table-cell;}
-                .divTableHeading { display: table-header-group;}
-                .divTableBody { display: table-row-group;}
+        /* COLLAPSE BUTTON */
+     .collapsible {
+          padding: 18px;
+          width: 100%;
+          border: none;
+          text-align: center;
+          outline: none;
+          font-size: 18pt;
+          background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
+          background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
+          background: linear-gradient(to right, #000080 0%, #4B0082 100%);
+          color: white;
+        }
 
-                /* COLLAPSE BUTTON */
-             .collapsible {
-                  padding: 18px;
-                  width: 100%;
-                  border: none;
-                  text-align: center;
-                  outline: none;
-                  font-size: 18pt;
-                  background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
-                  background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
-                  background: linear-gradient(to right, #000080 0%, #4B0082 100%);
-                  color: white;
-                }
+        .active, .collapsible:hover {
+          background-color: #555;
+        }
 
-                .active, .collapsible:hover {
-                  background-color: #555;
-                }
+        .collapsible:after {
+          content: '\002B';
+          color: white;
+          font-weight: bold;
+          float: right;
+          margin-left: 5px;
+        }
 
-                .collapsible:after {
-                  content: '\002B';
-                  color: white;
-                  font-weight: bold;
-                  float: right;
-                  margin-left: 5px;
-                }
+        .active:after {
+          content: "\2212";
+        }
 
-                .active:after {
-                  content: "\2212";
-                }
+        .content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.2s ease-out;
+        }
 
-                .content {
-                  max-height: 0;
-                  overflow: hidden;
-                  transition: max-height 0.2s ease-out;
-                }
+        #compareButton{
+          padding: 8px;
+          margin: 3px;
+          border: none;
+          text-align: center;
+          outline: none;
+          font-size: 13pt;
+          background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
+          background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
+          background: linear-gradient(to right, #000080 0%, #4B0082 100%);
+          color: white;
+        }
 
-                #compareButton{
-                  padding: 8px;
-                  margin: 3px;
-                  border: none;
-                  text-align: center;
-                  outline: none;
-                  font-size: 13pt;
-                  background: -moz-linear-gradient(left, #000080 0%, #4B0082 100%);
-                  background: -webkit-linear-gradient(left, #000080 0%, #4B0082 100%);
-                  background: linear-gradient(to right, #000080 0%, #4B0082 100%);
-                  color: white;
-                }
+        #tooltip
+        {
+            position: relative;
+            cursor: pointer;
+            width: 1%;
+            display: inline;
+            margin-right: 2em;
+            margin-bottom: 1.5em;
+        }
+        #tooltipText
+        {
+            float: right;
+            position: center;
+            top: 0;
+            margin-left: 2.5em;
+            margin-right: 14%;
+            background-color: #4e5b6c;
+            color: #fff;
+            white-space: nowrap;
+            padding: 10px 15px;
+            border-radius: 7px;
+            visibility: hidden;
+            opacity: 0;
+            transition: .4s ease-in-out; /*delay chiusura */
 
-                #tooltip
-                {
-                    position: relative;
-                    cursor: pointer;
-                    width: 1%;
-                    display: inline;
-                    margin-right: 2em;
-                    margin-bottom: 1.5em;
-                }
-                #tooltipText
-                {
-                    float: right;
-                    position: center;
-                    top: 0;
-                    margin-left: 2.5em;
-                    margin-right: 14%;
-                    background-color: #4e5b6c;
-                    color: #fff;
-                    white-space: nowrap;
-                    padding: 10px 15px;
-                    border-radius: 7px;
-                    visibility: hidden;
-                    opacity: 0;
-                    transition: .4s ease-in-out; /*delay chiusura */
+        }
+        #tooltipText::before
+        {
+            content: "";
+            position: absolute;
+            right: 50%;
 
-                }
-                #tooltipText::before
-                {
-                    content: "";
-                    position: absolute;
-                    right: 50%;
-
-                }
-                #tooltip:hover #tooltipText
-                {   visibility: visible;
-                    opacity: 90%;
-                    transition: .4s ease-in-out;
-                }
-                #tooltipText:hover /*delay chiusura */
-                {
-                    transition-delay: 5s;
-                    visibility: visible;
-                }
-
-</style>
-
+        }
+        #tooltip:hover #tooltipText
+        {   visibility: visible;
+            opacity: 90%;
+            transition: .4s ease-in-out;
+        }
+        #tooltipText:hover /*delay chiusura */
+        {
+            transition-delay: 5s;
+            visibility: visible;
+        }
+    </style>
     <!-- Responsive -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -334,7 +359,7 @@
 
         </div>
     <br><br>
-        <button type="button" class="collapsible" onclick="collapse()">Show all experiments</button>
+        <button id="openExperiment" type="button" class="collapsible" onclick="collapse()">Show all experiments</button>
 
 <div class="content">
     <form action={{url_for('compareExperiments')}} name="formDatasets" method="post">
@@ -436,11 +461,13 @@
                 Total time: {{ item.total_time}}s<br>
                 {% endif %}
             </div>
-<div class="divTableCell checkboxGroup">
-    <input type="checkbox" id="selectedDataset" class="cb" name="selectedDataset" value="{{item.id}}">
-</div>
+            <div class="divTableCell checkboxGroup">
+                <input type="checkbox" id="selectedDataset" class="cb" name="selectedDataset" value="{{item.id}}">
+            </div>
+            <div class="divTableCell">
+                <button type="button" name="downloadExperiment" class="btn btn-primary" value="{{item.id}}" id="downloadExperiment"><i class="fa fa-download" aria-hidden="true"></i></button>
+            </div>
             <script type="text/javascript">checkBoxLimit()</script>
-
         </div>
 
         </div>

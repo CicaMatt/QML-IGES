@@ -2,6 +2,7 @@ import collections
 import hashlib
 import itertools
 import json
+import os
 import re
 from datetime import timedelta
 from os.path import exists
@@ -9,12 +10,13 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from cryptography.fernet import Fernet
-from flask import request, render_template, flash, send_from_directory
+from flask import request, render_template, flash, send_from_directory, send_file
 from flask_login import login_user, logout_user, current_user
 from qiskit import IBMQ
 
 from src import app, db
 from src.source.model.models import User
+from src.source.utils.encryption import decrypt
 
 
 class UtenteControl:
@@ -262,3 +264,25 @@ class UtenteControl:
                 "error")
             return render_template("downloadPage.html")
 
+
+    @app.route("/experimentDownload", methods=["GET", "POST"])
+    def experimentDownload():
+        id = request.form.get("param")
+        filepath = Path.home() / "QMLdata" / current_user.email / id
+
+        decrypt(filepath, current_user.key)
+
+        zip_name = 'Experiment_' + str(id) + '.zip'
+        zip_path = filepath
+        zip = ZipFile(zip_path / zip_name, 'w')
+
+        for root, dirs, files in os.walk(filepath):
+            for file in files:
+                if ".zip" in str(file):
+                    continue
+                file_name = str(file)
+                zip.write(filepath / file_name, file_name)
+
+        zip.close()
+
+        return send_file(filepath / zip_name, as_attachment=True, download_name=zip_name)
