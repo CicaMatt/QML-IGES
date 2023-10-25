@@ -1,5 +1,7 @@
 import hashlib
 import itertools
+import os
+import pathlib
 import re
 import smtplib
 from datetime import timedelta
@@ -9,10 +11,11 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from os.path import exists
 from pathlib import Path
+from random import random
 from zipfile import ZipFile
 
 from cryptography.fernet import Fernet
-from flask import request, render_template, flash, send_from_directory, jsonify, abort
+from flask import request, render_template, flash, send_from_directory, jsonify, abort, send_file
 from flask_login import login_user, logout_user, current_user
 from qiskit import IBMQ
 
