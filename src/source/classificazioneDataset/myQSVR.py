@@ -1,5 +1,6 @@
 import csv
 import math
+import os
 import time
 import pandas as pd
 from qiskit.circuit.library import ZFeatureMap
@@ -78,6 +79,9 @@ class myQSVR:
             rmse = math.sqrt(mse)
             result["regression_score"] = score
             result["rmse"] = rmse
+
+            directory_path = os.path.dirname(pathTrain)
+            qsvr.save(directory_path + "NeuralNetworkClassifier.model")
 
             # prediction
             start_time = time.time()

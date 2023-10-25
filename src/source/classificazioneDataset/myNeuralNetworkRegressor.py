@@ -1,5 +1,6 @@
 import csv
 import math
+import os
 import time
 import traceback
 
@@ -108,6 +109,10 @@ class myNeuralNetworkRegressor:
 
             result["total_time"] = str(testing_time + training_time)[0:6]
             result["training_time"] = str(training_time)[0:6]
+
+            directory_path = os.path.dirname(pathTrain)
+            vqr.save(directory_path + "NeuralNetworkClassifier.model")
+
         except Exception as e:
             print(e)
             result["error"] = 1

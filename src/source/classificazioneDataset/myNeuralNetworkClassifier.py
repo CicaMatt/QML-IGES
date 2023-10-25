@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -122,6 +123,9 @@ class myNeuralNetworkClassifier:
             result["testing_precision"] = precision
             result["testing_recall"] = recall
             result["testing_accuracy"] = accuracy
+
+            directory_path = os.path.dirname(pathTrain)
+            circuit_classifier.save(directory_path + "NeuralNetworkClassifier.model")
 
             # prediction
             start_time = time.time()

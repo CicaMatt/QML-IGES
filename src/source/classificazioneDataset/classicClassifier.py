@@ -1,3 +1,5 @@
+import os
+import pickle
 import time
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -105,6 +107,9 @@ class classicClassifier:
             ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
             plt.show()
+
+            directory_path = os.path.dirname(pathTrain)
+            pickle.dump(model, open(directory_path + "/model.sav", 'wb'))
         except Exception as e:
             print(e)
             result["error"] = 1

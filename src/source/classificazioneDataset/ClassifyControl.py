@@ -528,7 +528,7 @@ class ClassificazioneControl:
             session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
             session.ehlo()
             session.starttls()  # enable security
-            session.login("quantumoonlight@gmail.com", "xfbucmpujzobtoux")  # login with mail_id and password
+            session.login("quantumoonlight@gmail.com", "erkz pqec tbra duzo")  # login with mail_id and password
             session.sendmail("quantumoonlight@gmail.com", recipients, msg.__str__())
             session.quit()
         except BaseException:
