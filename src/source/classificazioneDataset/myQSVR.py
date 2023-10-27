@@ -81,7 +81,7 @@ class myQSVR:
             result["rmse"] = rmse
 
             directory_path = os.path.dirname(pathTrain)
-            qsvr.save(directory_path + "NeuralNetworkClassifier.model")
+            qsvr.save(directory_path + "/QSVR.model")
 
             # prediction
             start_time = time.time()

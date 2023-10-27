@@ -85,7 +85,7 @@ class myPegasosQSVC:
             result["testing_accuracy"] = accuracy
 
             directory_path = os.path.dirname(pathTrain)
-            qsvc.save(directory_path + "NeuralNetworkClassifier.model")
+            qsvc.save(directory_path + "/PegasosQSVC.model")
 
             # prediction
             start_time = time.time()
