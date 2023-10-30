@@ -125,7 +125,7 @@ class myNeuralNetworkClassifier:
             result["testing_accuracy"] = accuracy
 
             directory_path = os.path.dirname(pathTrain)
-            circuit_classifier.save(directory_path + "NeuralNetworkClassifier.model")
+            circuit_classifier.save(directory_path + "/NeuralNetworkClassifier.model")
 
             # prediction
             start_time = time.time()

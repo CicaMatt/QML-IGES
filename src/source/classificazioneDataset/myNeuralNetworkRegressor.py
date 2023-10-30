@@ -111,7 +111,7 @@ class myNeuralNetworkRegressor:
             result["training_time"] = str(training_time)[0:6]
 
             directory_path = os.path.dirname(pathTrain)
-            vqr.save(directory_path + "NeuralNetworkClassifier.model")
+            vqr.save(directory_path + "/NeuralNetworkRegressor.model")
 
         except Exception as e:
             print(e)
