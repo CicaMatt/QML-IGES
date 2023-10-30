@@ -15,9 +15,8 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from cryptography.fernet import Fernet
-from flask import request, render_template, flash, send_from_directory, jsonify, abort, send_file
+from flask import request, render_template, flash, send_from_directory, jsonify, abort
 from flask_login import login_user, logout_user, current_user
-from qiskit import IBMQ
 
 from src import app, db
 from src.source.model.models import User
@@ -334,23 +333,26 @@ class UtenteControl:
 
     @app.route("/experimentDownload", methods=["GET", "POST"])
     def experimentDownload():
-        id = request.form.get("param")
+        id = request.form.get("expID")
         filepath = Path.home() / "QMLdata" / current_user.email / id
 
         decrypt(filepath, current_user.key)
 
         zip_name = 'Experiment_' + str(id) + '.zip'
         zip_path = filepath
-        zipFile = ZipFile(zip_path / zip_name, 'w')
+        zip_file = ZipFile(zip_path / zip_name, 'w')
 
         for root, dirs, files in os.walk(filepath):
             for file in files:
                 if os.path.splitext(file)[1] == ".dat" or os.path.splitext(file)[1] == ".zip":
                     continue
                 file_name = str(file)
-                zipFile.write(filepath / file_name, file_name)
+                zip_file.write(filepath / file_name, file_name)
                 os.remove(os.path.join(root, file))
 
-        zipFile.close()
+        zip_file.close()
 
-        return send_file(filepath / zip_name, as_attachment=True, download_name=zip_name)
+        return send_from_directory(
+            directory=filepath,
+            path=zip_name
+        )
