@@ -1,4 +1,8 @@
 import hashlib
+import os
+import shutil
+from zipfile import ZipFile
+from pathlib import Path
 from unittest import TestCase
 
 from flask_login import current_user, UserMixin, AnonymousUserMixin
@@ -6,6 +10,7 @@ from sqlalchemy_utils import database_exists, create_database
 
 from src import app, db
 from src.source.model.models import User
+from src.source.utils.encryption import encrypt
 
 
 class Test_signup(TestCase):
@@ -124,7 +129,7 @@ class Test_Login_Logout(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -138,6 +143,8 @@ class Test_Login_Logout(TestCase):
                 username="Antonio de Curtis",
                 name="Antonio",
                 surname="De Curtis",
+                token="d947c14b6b0ffab991ed9b3f90f07f7d41e60e0d676530d55760bfee66c08edbceccc35bfc67ce0091fc4c7bb2e431570917fc1d4e77f090f837c69c39b965a1",
+                key="eac41DVAzh8GJXFrQmLJ1hQtXXiLCR9rxgiFcf8qRSI="
             )
             db.session.add(utente)
             db.session.commit()
@@ -214,6 +221,34 @@ class Test_Login_Logout(TestCase):
             self.assertEqual(statuscode, 200)
             self.assertTrue(current_user.newsletter)
 
+    def test_Download(self):
+        tester = app.test_client()
+        with tester:
+            tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia")
+            )
+
+            path = Path.home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
+            Path(path).mkdir(parents=True, exist_ok=True)
+            with open(path / "test.txt", 'w') as file:
+                file.write("test")
+            encrypt(path, current_user.key)
+
+            response = tester.post(
+                "/experimentDownload",
+                data=dict(expID="1")
+            )
+            self.assertEqual(200, response.status_code)
+            self.assertEqual("application/x-zip-compressed", response.content_type)
+
+            with open(path / 'zipfile.zip', 'wb') as file:
+                file.write(response.data)
+
+            with ZipFile(path / 'zipfile.zip', 'r') as zip_ref:
+                self.assertIsNone(zip_ref.testzip())
+
     def tearDown(self):
         with app.app_context():
             db.drop_all()
+            shutil.rmtree(Path.home() / "QMLdata" / "boscoverde27@gmail.com")
