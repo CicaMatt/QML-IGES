@@ -343,22 +343,20 @@ class UtenteControl:
     @app.route("/experimentDownload", methods=["GET", "POST"])
     def experimentDownload():
         try:
-            id = request.form.get("expID")
-            filepath = Path.home() / "QMLdata" / current_user.email / id
+            exp_id = request.form.get("expID")
+            filepath = Path.home() / "QMLdata" / current_user.email / exp_id
 
             decrypt(filepath, current_user.key)
 
-            zip_name = 'Experiment_' + str(id) + '.zip'
-            zip_path = filepath
-            zip_file = ZipFile(zip_path / zip_name, 'w')
+            zip_name = 'Experiment_' + str(exp_id) + '.zip'
+            zip_file = ZipFile(filepath / zip_name, 'w')
 
             for root, dirs, files in os.walk(filepath):
                 for file in files:
                     if os.path.splitext(file)[1] == ".dat" or os.path.splitext(file)[1] == ".zip":
                         continue
-                    file_name = str(file)
-                    zip_file.write(filepath / file_name, file_name)
-                    os.remove(os.path.join(root, file))
+                    zip_file.write(filepath / file, file)
+                    os.remove(filepath / file)
 
             zip_file.close()
 
@@ -367,8 +365,8 @@ class UtenteControl:
                 path=zip_name
             )
         except:
+            print("Error occurred during experiment download")
             flash("Unable to download the file, try again", "error")
-            return render_template("datasetList.html")
         finally:
             thread = Thread(target=delete_zip, args=(filepath,))
             thread.setDaemon(True)
