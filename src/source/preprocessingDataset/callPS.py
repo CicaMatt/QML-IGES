@@ -9,7 +9,7 @@ from src.source.preprocessingDataset import (
 )
 
 def callPrototypeSelection(
-        path: pathlib.Path, number_of_reduced_training_instances=10
+        path: pathlib.Path, number_of_reduced_training_instances
 ):
     """
     This function executes the prototype selection on the given dataset and write the result in reducedTrainingPS.csv

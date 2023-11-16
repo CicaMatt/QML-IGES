@@ -25,25 +25,7 @@ class classicRegressor:
         test_features = data_test.drop(columns='labels')
         test_labels = data_test["labels"].values
 
-        toAdd = ""
-        num_col = utils.numberOfColumns(path_predict)
-        for j in range(1, num_col + 1):
-            if j == num_col:
-                toAdd += "feature" + str(j) + "\n"
-                continue
-            toAdd += "feature" + str(j) + ","
-
-        with open(path_predict, "r") as f:
-            contents = f.readlines()
-
-        contents.insert(0, toAdd)
-
-        with open(path_predict, "w") as f:
-            contents = "".join(contents)
-            f.write(contents)
-
         prediction_data = np.genfromtxt(path_predict, delimiter=',')
-        prediction_data = np.delete(prediction_data, 0, axis=0)
 
         test_features = test_features.to_numpy() #Pegasos.fit accetta numpy array e non dataframe
         train_features = train_features.to_numpy()

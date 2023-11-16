@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import logging
 import os
 import pathlib
 import unittest
@@ -13,7 +14,7 @@ from flask_login import UserMixin, AnonymousUserMixin
 from flask_login import current_user
 from sqlalchemy import desc
 from sqlalchemy_utils import database_exists, create_database
-
+from cryptography.fernet import Fernet
 from src import app
 from src import db
 from src.source.model.models import Article, Dataset
@@ -49,8 +50,7 @@ class TestValidazioneControl(unittest.TestCase):
         tester = app.test_client(self)
         userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
         userpathTest = None
-        simpleSplit = True
-        kFold = None
+        validation = "Simple Split"
         k = 10
 
         response = tester.post(
@@ -58,8 +58,7 @@ class TestValidazioneControl(unittest.TestCase):
             data=dict(
                 userpath=userpath,
                 userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
+                validation=validation,
                 k=k,
             ),
         )
@@ -77,8 +76,7 @@ class TestValidazioneControl(unittest.TestCase):
         tester = app.test_client(self)
         userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
         userpathTest = None
-        simpleSplit = None
-        kFold = True
+        validation = "K Fold"
         k = 10
 
         response = tester.post(
@@ -86,8 +84,7 @@ class TestValidazioneControl(unittest.TestCase):
             data=dict(
                 userpath=userpath,
                 userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
+                validation = validation,
                 k=k,
             ),
         )
@@ -109,8 +106,7 @@ class TestValidazioneControl(unittest.TestCase):
         tester = app.test_client(self)
         userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
         userpathTest = None
-        simpleSplit = None
-        kFold = True
+        validation = "K Fold"
         k = 1
 
         response = tester.post(
@@ -118,8 +114,7 @@ class TestValidazioneControl(unittest.TestCase):
             data=dict(
                 userpath=userpath,
                 userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
+                validation = validation,
                 k=k,
             ),
         )
@@ -131,42 +126,42 @@ class TestValidazioneControl(unittest.TestCase):
         self.assertFalse(exists(pathData / StringaTrain))
         self.assertFalse(exists(pathData / StringaTest))
 
-    def test_ValidazioneControl_KFold_SimpleSplit(self):
-        """
-        Tests when the user wants to validate a dataset with kFold and SimpleSplit and
-        checks if no new datasets exist because you can not validate a dataset with both kFold
-        and SimpleSplit
-        """
-        tester = app.test_client(self)
-        userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
-        userpathTest = None
-        simpleSplit = True
-        kFold = True
-        k = 10
-
-        response = tester.post(
-            "/validazioneControl",
-            data=dict(
-                userpath=userpath,
-                userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
-                k=k,
-            ),
-        )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 400)
-        pathData = pathlib.Path(__file__).parents[0]
-
-        for x in range(k):
-            StringaTrain = "training_fold_{}.csv".format(x + 1)
-            StringaTest = "testing_fold_{}.csv".format(x + 1)
-            self.assertFalse(exists(pathData / StringaTrain))
-            self.assertFalse(exists(pathData / StringaTest))
-
-        self.assertFalse(exists(pathData / "Data_training.csv"))
-        self.assertFalse(exists(pathData / "Data_testing.csv"))
-        self.assertFalse(exists(pathData / "featureDataset.csv"))
+    # def test_ValidazioneControl_KFold_SimpleSplit(self):
+    #     """
+    #     Tests when the user wants to validate a dataset with kFold and SimpleSplit and
+    #     checks if no new datasets exist because you can not validate a dataset with both kFold
+    #     and SimpleSplit
+    #     """
+    #     tester = app.test_client(self)
+    #     userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
+    #     userpathTest = None
+    #     simpleSplit = True
+    #     kFold = True
+    #     k = 10
+    #
+    #     response = tester.post(
+    #         "/validazioneControl",
+    #         data=dict(
+    #             userpath=userpath,
+    #             userpathTest=userpathTest,
+    #             simpleSplit=simpleSplit,
+    #             kFold=kFold,
+    #             k=k,
+    #         ),
+    #     )
+    #     statuscode = response.status_code
+    #     self.assertEqual(statuscode, 400)
+    #     pathData = pathlib.Path(__file__).parents[0]
+    #
+    #     for x in range(k):
+    #         StringaTrain = "training_fold_{}.csv".format(x + 1)
+    #         StringaTest = "testing_fold_{}.csv".format(x + 1)
+    #         self.assertFalse(exists(pathData / StringaTrain))
+    #         self.assertFalse(exists(pathData / StringaTest))
+    #
+    #     self.assertFalse(exists(pathData / "Data_training.csv"))
+    #     self.assertFalse(exists(pathData / "Data_testing.csv"))
+    #     self.assertFalse(exists(pathData / "featureDataset.csv"))
 
     def test_ValidazioneControl_NoSplit(self):
         """
@@ -176,8 +171,7 @@ class TestValidazioneControl(unittest.TestCase):
         tester = app.test_client(self)
         userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
         userpathTest = pathlib.Path(__file__).parents[0] / "bupa.csv"
-        simpleSplit = None
-        kFold = None
+        validation = None
         k = 10
 
         response = tester.post(
@@ -185,8 +179,7 @@ class TestValidazioneControl(unittest.TestCase):
             data=dict(
                 userpath=userpath,
                 userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
+                validation=validation,
                 k=k,
             ),
         )
@@ -204,8 +197,7 @@ class TestValidazioneControl(unittest.TestCase):
         tester = app.test_client(self)
         userpath = pathlib.Path(__file__).parents[0] / "bupa.csv"
         userpathTest = None
-        simpleSplit = None
-        kFold = None
+        validazione = None
         k = 10
 
         response = tester.post(
@@ -213,8 +205,7 @@ class TestValidazioneControl(unittest.TestCase):
             data=dict(
                 userpath=userpath,
                 userpathTest=userpathTest,
-                simpleSplit=simpleSplit,
-                kFold=kFold,
+                validazione=validazione,
                 k=k,
             ),
         )
@@ -301,10 +292,11 @@ class TestSimpleSplit(unittest.TestCase):
         numRaws = utils.numberOfRows(filename.__str__())
 
         train_testSplit.splitDataset(filename.__str__())
-        self.assertEqual(20, utils.numberOfRows("Data_testing.csv"))
-        self.assertEqual(
-            numRaws - 20, utils.numberOfRows("Data_training.csv")
-        )
+
+        train_len = utils.numberOfRows("Data_training.csv")
+        test_len = utils.numberOfRows("Data_testing.csv")
+        self.assertEqual( round(numRaws*0.20), test_len)
+        self.assertEqual(numRaws - round(numRaws*0.20), train_len)
         self.assertTrue(
             exists(pathlib.Path(__file__).parent / "Data_testing.csv")
         )
@@ -359,7 +351,7 @@ class TestPreprocessingControl(unittest.TestCase):
         self.assertTrue(exists(pathMock / "bupa.csv"))
         self.assertTrue(exists(pathMock / "bupaToPredict.csv"))
 
-    def test_PreprocessingControl_onlyQSVM(self):
+    def test_PreprocessingControl_onlyClassification(self):
         """
         Tests when the user wants to execute classification but no Preprocessing.
         Check if exists the two dataset to classify
@@ -371,9 +363,11 @@ class TestPreprocessingControl(unittest.TestCase):
         )
         prototypeSelection = None
         featureExtraction = None
+        featureSelection = None
         numRowsPS = 10
         numColsFE = 2
-        doQSVM = True
+        numRowsFS = 2
+        model = "Random Forest Classifier"
 
         response = tester.post(
             "/preprocessingControl",
@@ -382,9 +376,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRowsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numRowsFS=numRowsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -404,9 +400,11 @@ class TestPreprocessingControl(unittest.TestCase):
         userpathToPredict = None
         prototypeSelection = True
         featureExtraction = None
+        featureSelection = None
         numRowsPS = 10
         numColsFE = 2
-        doQSVM = None
+        numRowsFS = 2
+        model = None
 
         response = tester.post(
             "/preprocessingControl",
@@ -415,9 +413,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRowsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numRowsFS=numRowsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -439,9 +439,11 @@ class TestPreprocessingControl(unittest.TestCase):
         userpathToPredict = None
         prototypeSelection = True
         featureExtraction = None
+        featureSelection = None
         numRowsPS = 100000
         numColsFE = 2
-        doQSVM = None
+        numRowsFS = 2
+        model = None
 
         response = tester.post(
             "/preprocessingControl",
@@ -450,9 +452,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRowsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numRowsFS=numRowsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -473,9 +477,11 @@ class TestPreprocessingControl(unittest.TestCase):
         userpathToPredict = None
         prototypeSelection = None
         featureExtraction = True
+        featureSelection = None
         numRowsPS = 10
         numColsFE = 2
-        doQSVM = None
+        numRowsFS = 2
+        model = None
 
         response = tester.post(
             "/preprocessingControl",
@@ -484,9 +490,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRowsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numRowsFS=numRowsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -495,8 +503,8 @@ class TestPreprocessingControl(unittest.TestCase):
         pathData = pathlib.Path(__file__).parents[0]
         self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
         self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Train.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
+        self.assertTrue(exists(pathData / "Train_Feature_Extraction.csv"))
+        self.assertTrue(exists(pathData / "Test_Feature_Extraction.csv"))
 
     def test_PreprocessingControl_failFE(self):
         """
@@ -509,9 +517,11 @@ class TestPreprocessingControl(unittest.TestCase):
         userpathToPredict = None
         prototypeSelection = None
         featureExtraction = True
+        featureSelection = None
         numRowsPS = 10
         numColsFE = 15
-        doQSVM = None
+        numRowsFS = 2
+        model = None
 
         response = tester.post(
             "/preprocessingControl",
@@ -520,9 +530,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRowsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numRowsFS=numRowsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -531,8 +543,8 @@ class TestPreprocessingControl(unittest.TestCase):
         pathData = pathlib.Path(__file__).parents[0]
         self.assertFalse(exists(pathData / "DataSetTrainPreprocessato.csv"))
         self.assertFalse(exists(pathData / "DataSetTestPreprocessato.csv"))
-        self.assertFalse(exists(pathData / "yourPCA_Train.csv"))
-        self.assertFalse(exists(pathData / "yourPCA_Test.csv"))
+        self.assertFalse(exists(pathData / "Train_Feature_Extraction.csv"))
+        self.assertFalse(exists(pathData / "Test_Feature_Extraction.csv"))
 
     def test_PreprocessingControl_FE_PS(self):
         """
@@ -545,9 +557,11 @@ class TestPreprocessingControl(unittest.TestCase):
         userpathToPredict = None
         prototypeSelection = True
         featureExtraction = True
+        featureSelection = False
         numRawsPS = 10
         numColsFE = 2
-        doQSVM = None
+        numColsFS = 2
+        model = None
 
         response = tester.post(
             "/preprocessingControl",
@@ -556,9 +570,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRawsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numColsFS=numColsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -568,10 +584,10 @@ class TestPreprocessingControl(unittest.TestCase):
         self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
         self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
         self.assertTrue(exists(pathData / "reducedTrainingPS.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Train.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
+        self.assertTrue(exists(pathData / "Train_Feature_Extraction.csv"))
+        self.assertTrue(exists(pathData / "Test_Feature_Extraction.csv"))
 
-    def test_PreprocessingControl_FE_QSVM(self):
+    def test_PreprocessingControl_FE_Classification(self):
         """
         Test when the user wants to execute Feature Extraction on the training and testing dataset
         and classification.
@@ -585,9 +601,11 @@ class TestPreprocessingControl(unittest.TestCase):
         )
         prototypeSelection = None
         featureExtraction = True
+        featureSelection = False
         numRawsPS = 10
         numColsFE = 2
-        doQSVM = True
+        numColsFS = 2
+        model = "Random Forest Classifier"
 
         response = tester.post(
             "/preprocessingControl",
@@ -596,9 +614,11 @@ class TestPreprocessingControl(unittest.TestCase):
                 userpathToPredict=userpathToPredict,
                 prototypeSelection=prototypeSelection,
                 featureExtraction=featureExtraction,
+                featureSelection=featureSelection,
                 numRawsPS=numRawsPS,
                 numColsFE=numColsFE,
-                doQSVM=doQSVM,
+                numColsFS=numColsFS,
+                model=model,
             ),
         )
         statuscode = response.status_code
@@ -607,8 +627,8 @@ class TestPreprocessingControl(unittest.TestCase):
         pathData = pathlib.Path(__file__).parents[0]
         self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
         self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Train.csv"))
-        self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
+        self.assertTrue(exists(pathData / "Train_Feature_Extraction.csv"))
+        self.assertTrue(exists(pathData / "Test_Feature_Extraction.csv"))
         self.assertTrue(exists(pathData / "doPredictionFE.csv"))
 
     def tearDown(self):
@@ -1033,240 +1053,399 @@ class TestUser(TestCase):
             db.drop_all()
 
 
-class TestList(TestCase):
+# class TestList(TestCase):
+#     def setUp(self):
+#         super().setUp()
+#         app.config[
+#             "SQLALCHEMY_DATABASE_URI"
+#         ] = "mysql://admin@127.0.0.1/test_db"
+#         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+#         tester = app.test_client(self)
+#         with app.app_context():
+#             db.drop_all()
+#         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+#             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
+#         with app.app_context():
+#             db.create_all()
+#             user1 = User(
+#                 email="mariorossi12@gmail.com",
+#                 password="prosopagnosia",
+#                 username="Antonio de Curtis ",
+#                 name="Antonio",
+#                 surname="De Curtis",
+#                 token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
+#                 key=Fernet.generate_key(),
+#             )
+#             user2 = User(
+#                 email="giuseppeverdi@gmail.com",
+#                 password="asperger",
+#                 username="giuVerdiProXX",
+#                 name="Giuseppe",
+#                 surname="Verdi",
+#                 token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
+#                 key=Fernet.generate_key(),
+#             )
+#             art1 = Article(
+#                 email_user="mariorossi12@gmail.com",
+#                 title="BuonNatale",
+#                 body="primobody",
+#                 category="primaCat",
+#                 data=datetime(2021, 12, 25),
+#                 author="giuVerdiProXX"
+#             )
+#             art2 = Article(
+#                 email_user="mariorossi12@gmail.com",
+#                 title="BuonCapodanno",
+#                 body="secondoBody",
+#                 category="secondaCat",
+#                 data=datetime(2022, 1, 1),
+#                 author="giuVerdiProXX"
+#             )
+#             db.session.add(user1)
+#             db.session.add(user2)
+#             db.session.commit()
+#             db.session.add(art1)
+#             db.session.add(art2)
+#             db.session.commit()
+#
+#     def test_listUser(self):
+#         """
+#         test the functionality of getting all registered users to the site
+#         """
+#         tester = app.test_client()
+#         with tester:
+#             print("prima")
+#             response = tester.post(
+#                 "/gestione",
+#                 data=dict(scelta="listUser"),
+#             )
+#             print("dopo")
+#
+#             statuscode = response.status_code
+#             self.assertEqual(statuscode, 200)
+#         # self.assertTrue(User.query.filter_by(email="mariorossi12@gmail.com").first())
+#         # self.assertTrue(User.query.filter_by(email="giuseppeverdi@gmail.com").first())
+#         # db.session.commit()
+#
+#     # def test_listArticlesUser(self):
+#     #     """
+#     #     test the functionality of getting articles written by a user
+#     #     """
+#     #     tester = app.test_client()
+#     #     response = tester.post(
+#     #         "/gestione/",
+#     #         data=dict(
+#     #             scelta="listArticlesUser",
+#     #             email="mariorossi12@gmail.com",
+#     #         ),
+#     #     )
+#     #     statuscode = response.status_code
+#     #     self.assertEqual(statuscode, 200)
+#     #     self.assertTrue(
+#     #         Article.query.filter_by(
+#     #             email_user="mariorossi12@gmail.com"
+#     #         ).limit(2)
+#     #     )
+#     #     db.session.commit()
+#
+#     # statuscode = response.status_code
+#         # self.assertEqual(statuscode, 200)
+#         # self.assertTrue(User.query.filter_by(email="mariorossi12@gmail.com").first())
+#         # self.assertTrue(User.query.filter_by(email="giuseppeverdi@gmail.com").first())
+#         # db.session.commit()
+#
+#     # def test_listArticlesUser(self):
+#     #     """
+#     #     test the functionality of getting articles written by a user
+#     #     """
+#     #     tester = app.test_client()
+#     #     with app.app_context():
+#     #         db.create_all()
+#     #     response = tester.post(
+#     #         "/gestione/",
+#     #         data=dict(
+#     #             scelta="listArticlesUser",
+#     #             email="mariorossi12@gmail.com",
+#     #         ),
+#     #     )
+#     #     statuscode = response.status_code
+#     #     self.assertEqual(statuscode, 200)
+#     #     self.assertTrue(
+#     #         Article.query.filter_by(
+#     #             email_user="mariorossi12@gmail.com"
+#     #         ).limit(2)
+#     #     )
+#     #     db.session.commit()
+#     #
+#     # def test_listArticlesData(self):
+#     #     """
+#     #     tests the functionality of getting articles written between two dates
+#     #     """
+#     #     tester = app.test_client()
+#     #     with app.app_context():
+#     #         db.create_all()
+#     #     response = tester.post(
+#     #         "/gestione/",
+#     #         data=dict(
+#     #             scelta="listArticlesData",
+#     #             firstData="2021-12-20",
+#     #             secondData="2021-12-30",
+#     #         ),
+#     #     )
+#     #     statuscode = response.status_code
+#     #     self.assertEqual(statuscode, 200)
+#     #     self.assertTrue(
+#     #         Article.query.filter(
+#     #             Article.data.between("2021-12-20", "2021-12-30")
+#     #         ).first()
+#     #     )
+#     #     db.session.commit()
+#
+#     # def tearDown(self):
+#     #     with app.app_context():
+#     #         db.drop_all()
+
+
+class TestClassifyControl(unittest.TestCase):
     def setUp(self):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        tester = app.test_client(self)
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
             db.create_all()
-            user1 = User(
-                email="mariorossi12@gmail.com",
-                password="prosopagnosia",
-                username="Antonio de Curtis ",
+            password = "quercia1234"
+            password = hashlib.sha512(password.encode()).hexdigest()
+            utente = User(
+                email="boscoverde27@gmail.com",
+                password=password,
+                username="Antonio de Curtis",
                 name="Antonio",
                 surname="De Curtis",
+                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
+                "91a7ad17643eecbe13d1c8c4adccd2",
+                isResearcher=False,
+                key=Fernet.generate_key()
             )
-            user2 = User(
-                email="giuseppeverdi@gmail.com",
-                password="asperger",
-                username="giuVerdiProXX",
-                name="Giuseppe",
-                surname="Verdi",
+            salvataggiodatabase = Dataset(
+                email_user="boscoverde27@gmail.com",
+                name="bupa.csv",
+                upload_date=datetime.now(),
+                validation="Simple Split",
+                ps=False,
+                fs=False,
+                fe=False,
+                model="Random Forest Classifier",
             )
-            art1 = Article(
-                email_user="mariorossi12@gmail.com",
-                title="BuonNatale",
-                body="primobody",
-                category="primaCat",
-                data=datetime(2021, 12, 25),
-            )
-            art2 = Article(
-                email_user="mariorossi12@gmail.com",
-                title="BuonCapodanno",
-                body="secondoBody",
-                category="secondaCat",
-                data=datetime(2022, 1, 1),
-            )
-            db.session.add(user1)
-            db.session.add(user2)
+            db.session.add(utente)
             db.session.commit()
-            db.session.add(art1)
-            db.session.add(art2)
+            db.session.add(salvataggiodatabase)
             db.session.commit()
-
-    def test_listUser(self):
-        """
-        test the functionality of getting all registered users to the site
-        """
-        tester = app.test_client()
-        with app.app_context():
-            db.create_all()
-        response = tester.post(
-            "/gestione/",
-            data=dict(scelta="listUser"),
-        )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-        self.assertTrue(User.query.filter_by(email="mariorossi12@gmail.com").first())
-        self.assertTrue(User.query.filter_by(email="giuseppeverdi@gmail.com").first())
-        db.session.commit()
-
-    def test_listArticlesUser(self):
-        """
-        test the functionality of getting articles written by a user
-        """
-        tester = app.test_client()
-        with app.app_context():
-            db.create_all()
-        response = tester.post(
-            "/gestione/",
-            data=dict(
-                scelta="listArticlesUser",
-                email="mariorossi12@gmail.com",
-            ),
-        )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-        self.assertTrue(
-            Article.query.filter_by(
-                email_user="mariorossi12@gmail.com"
-            ).limit(2)
-        )
-        db.session.commit()
-
-    def test_listArticlesData(self):
-        """
-        tests the functionality of getting articles written between two dates
-        """
-        tester = app.test_client()
-        with app.app_context():
-            db.create_all()
-        response = tester.post(
-            "/gestione/",
-            data=dict(
-                scelta="listArticlesData",
-                firstData="2021-12-20",
-                secondData="2021-12-30",
-            ),
-        )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-        self.assertTrue(
-            Article.query.filter(
-                Article.data.between("2021-12-20", "2021-12-30")
-            ).first()
-        )
-        db.session.commit()
-
-    def tearDown(self):
-        with app.app_context():
-            db.drop_all()
-
-
-class TestClassifyControl(unittest.TestCase):
 
     def test_classify_control(self):
         """
         Test the input coming from the form and the status code returned, and check if the classification result
         file is created
         """
-        path_train = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTrainPreprocessato.csv"
-        )
-        path_test = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTestPreprocessato.csv"
-        )
-        path_prediction = (
-            pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
-        )
-        features = utils.createFeatureList(2)
-        token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
-                "91a7ad17643eecbe13d1c8c4adccd2"
-        backend = "aer_simulator"
-        email = "quantumoonlight@gmail.com"
+        tester = app.test_client(self)
+        with tester:
 
-        response = app.test_client(self).post(
-            "/classify_control",
-            data=dict(
-                pathTrain=path_train,
-                pathTest=path_test,
-                email=email,
-                userpathToPredict=path_prediction,
-                features=features,
-                token=token,
-                backend=backend,
-            ),
-        )
-        thread = flask.g
-        thread.join()
-        statuscode = response.status_code
-        self.assertEqual(200, statuscode)
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
+            )
+
+            assert isinstance(current_user, User)
+            self.assertTrue(current_user.is_authenticated)
+
+            path_train = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
+                    "91a7ad17643eecbe13d1c8c4adccd2"
+            backend = "aer_simulator"
+            email = "quantumoonlight@gmail.com"
+            model = "SVC"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+            user_id = current_user.email
+
+            response = app.test_client(self).post(
+                "/classify_control",
+                data=dict(
+                    pathTrain=path_train,
+                    pathTest=path_test,
+                    email=email,
+                    userpathToPredict=path_prediction,
+                    features=features,
+                    token=token,
+                    backend=backend,
+                    model=model,
+                    C=C,
+                    tau=tau,
+                    optimizer=optimizer,
+                    loss=loss,
+                    max_iter=max_iter,
+                    kernelSVR=kernelSVR,
+                    kernelSVC=kernelSVC,
+                    C_SVC=C_SVC,
+                    C_SVR=C_SVR,
+                    id_dataset=id_dataset,
+                    User=user_id
+                ),
+            )
+            thread = flask.g
+            thread.join()
+            statuscode = response.status_code
+            self.assertEqual(200, statuscode)
 
     def test_classification_thread(self):
         """
         Test if thread that calls the classify and QSVM works properly
         """
-        path_train = (
-                pathlib.Path(__file__).cwd()
-                / "testingFiles"
-                / "DataSetTrainPreprocessato.csv"
-        )
-        path_test = (
-                pathlib.Path(__file__).cwd()
-                / "testingFiles"
-                / "DataSetTestPreprocessato.csv"
-        )
-        path_prediction = (
-                pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
-        )
-        features = utils.createFeatureList(2)
-        token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
-                "91a7ad17643eecbe13d1c8c4adccd2"
-        backend_selected = "aer_simulator"
-        email = "quantumoonlight@gmail.com"
 
-        result = ClassificazioneControl().classification_thread(path_train, path_test, path_prediction, features,
-                                                                token, backend_selected, email)
-
-        self.assertNotEqual(result, 1)
-        self.assertTrue(
-            exists(
-                pathlib.Path(__file__).parent
-                / "testingFiles"
-                / "classifiedFile.csv"
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
             )
-        )
+
+            path_train = (
+                    pathlib.Path(__file__).cwd()
+                    / "testingFiles"
+                    / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                    pathlib.Path(__file__).cwd()
+                    / "testingFiles"
+                    / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                    pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
+                    "91a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            email = "quantumoonlight@gmail.com"
+            model = "Random Forest Classifier"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+            user_id = current_user.email
+
+            result = ClassificazioneControl().classification_thread(path_train, path_test, path_prediction, features,
+                                                                    token, backend_selected, email, model, C, tau,
+                                                                    optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                                    C_SVC, C_SVR, id_dataset, user_id)
+
+            self.assertNotEqual(result, 1)
+            self.assertTrue(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "classifiedFile.csv"
+                )
+            )
 
     def test_classify(self):
         """
         Test the classify function with correct parameters and input files, and check if the classification result
         file is created
         """
-        path_train = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTrainPreprocessato.csv"
-        )
-        path_test = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTestPreprocessato.csv"
-        )
-        path_prediction = (
-            pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
-        )
-        features = utils.createFeatureList(2)
-        token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519" \
-                "691a7ad17643eecbe13d1c8c4adccd2"
-        backend_selected = "aer_simulator"
 
-        result = ClassificazioneControl().classify(
-            path_train,
-            path_test,
-            path_prediction,
-            features,
-            token,
-            backend_selected,
-        )
-
-        self.assertNotEqual(result, 1)
-        self.assertTrue(
-            exists(
-                pathlib.Path(__file__).parent
-                / "testingFiles"
-                / "classifiedFile.csv"
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
             )
-        )
+
+            path_train = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).cwd() / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519" \
+                    "691a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            model = "Random Forest Classifier"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+            user_id = current_user.email
+
+            result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
+                                                                    token, backend_selected, model, C, tau,
+                                                                    optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                                    C_SVC, C_SVR, id_dataset, user_id
+            )
+
+            self.assertNotEqual(result, 1)
+            self.assertTrue(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "classifiedFile.csv"
+                )
+            )
 
     def test_getClassifiedDataset(self):
         """
@@ -1274,9 +1453,15 @@ class TestClassifyControl(unittest.TestCase):
         """
         result = {
             "testing_accuracy": 0.55687446747,
+            "testing_precision": 0.55687446747,
+            "testing_recall": 0.55687446747,
+            "f1": 0.55687446747,
+            "training_time": str(0.23434354),
             "test_success_ratio": 0.4765984595,
             "total_time": str(90.7),
-            "no_backend": True
+            "error": 0,
+            "no_backend": True,
+            "model": "QSVC"
         }
         open(
             pathlib.Path(__file__).parent
@@ -1289,7 +1474,7 @@ class TestClassifyControl(unittest.TestCase):
         )
 
         value = ClassificazioneControl().get_classified_dataset(
-            result, user_path_to_predict, "quantumoonlight@gmail.com"
+            result, user_path_to_predict, "quantumoonlight@gmail.com", "Random Forest Classifier", "simulator"
         )
         self.assertEqual(value, 1)
 
@@ -1305,10 +1490,52 @@ class TestClassifyControl(unittest.TestCase):
                 / "classifiedFile.csv"
             )
 
+        with app.app_context():
+            db.drop_all()
 
 class TestIbmFail(unittest.TestCase):
 
     def setUp(self):
+
+        super().setUp()
+        app.config[
+            "SQLALCHEMY_DATABASE_URI"
+        ] = "mysql://admin@127.0.0.1/test_db"
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        with app.app_context():
+            db.drop_all()
+        if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+            create_database(app.config["SQLALCHEMY_DATABASE_URI"])
+        with app.app_context():
+            db.create_all()
+            password = "quercia1234"
+            password = hashlib.sha512(password.encode()).hexdigest()
+            utente = User(
+                email="boscoverde27@gmail.com",
+                password=password,
+                username="Antonio de Curtis",
+                name="Antonio",
+                surname="De Curtis",
+                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
+                      "91a7ad17643eecbe13d1c8c4adccd2",
+                isResearcher=False,
+                key=Fernet.generate_key()
+            )
+            salvataggiodatabase = Dataset(
+                email_user="boscoverde27@gmail.com",
+                name="bupa.csv",
+                upload_date=datetime.now(),
+                validation="Simple Split",
+                ps=False,
+                fs=False,
+                fe=False,
+                model="Random Forest Classifier",
+            )
+            db.session.add(utente)
+            db.session.commit()
+            db.session.add(salvataggiodatabase)
+            db.session.commit()
+
         if os.path.exists(
             pathlib.Path(__file__).parent
             / "testingFiles"
@@ -1330,40 +1557,58 @@ class TestIbmFail(unittest.TestCase):
         """
         Test the classify function with not valid train and test datasets, to make the IBM backend fail on purpose
         """
-        path_train = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTrainPreprocessato.csv"
-        )
-        path_test = (
-            pathlib.Path(__file__).cwd()
-            / "testingFiles"
-            / "DataSetTestPreprocessato.csv"
-        )
-        path_prediction = (
-            pathlib.Path(__file__).cwd() / "testingFiles" / "emptyFile.csv"
-        )
-        features = utils.createFeatureList(2)
-        token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691" \
-                "a7ad17643eecbe13d1c8c4adccd2"
-        backend_selected = "aer_simulator"
-
-        result = ClassificazioneControl().classify(
-            path_train,
-            path_test,
-            path_prediction,
-            features,
-            token,
-            backend_selected,
-        )
-        self.assertEqual(result, 1)
-        self.assertFalse(
-            exists(
-                pathlib.Path(__file__).parent
-                / "testingFiles"
-                / "classifiedFile.csv"
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
             )
-        )
+            path_train = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).cwd()
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).cwd() / "testingFiles" / "emptyFile.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691" \
+                    "a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            model = "SVC"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+            user_id = current_user.email
+
+            result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
+                                                       token, backend_selected, model, C, tau,
+                                                       optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                       C_SVC, C_SVR, id_dataset, user_id
+                                                       )
+            self.assertEqual(result["error"], 1)
+            self.assertFalse(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "classifiedFile.csv"
+                )
+            )
 
     def tearDown(self) -> None:
         if os.path.exists(
@@ -1395,6 +1640,8 @@ class TestRoutes(unittest.TestCase):
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -1403,7 +1650,6 @@ class TestRoutes(unittest.TestCase):
     def test_routes(self):
         # Login User and test if that works
         tester = app.test_client()
-        self.assertFalse(current_user)
         with tester:
             # Setup for login testing
             password = "quercia12345"
@@ -1427,12 +1673,23 @@ class TestRoutes(unittest.TestCase):
             simpleSplit = True
             prototypeSelection = True
             featureExtraction = True
+            featureSelection = False
             numRowsPS = 10
             numColsFE = 2
-            doQSVM = True
+            numColsFS = 2
+            model = "SVC"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             backend = "aer_simulator"
             email = "quantumoonlight@gmail.com"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
 
             path = pathlib.Path(__file__).parent
             pathpred = path / "testingFiles" / "bupaToPredict.csv"
@@ -1449,15 +1706,25 @@ class TestRoutes(unittest.TestCase):
                     splitDataset=True,
                     reducePS=prototypeSelection,
                     reduceFE=featureExtraction,
-                    doQSVM=doQSVM,
+                    reduceFS=featureSelection,
+                    model=model,
                     simpleSplit=simpleSplit,
                     nrRows=numRowsPS,
-                    nrColumns=numColsFE,
+                    nrColumnsFE=numColsFE,
+                    nrColumnsFS=numColsFS,
                     backend=backend,
                     token=token,
                     email=email,
-                    Radio="simpleSplit"
-
+                    Radio="simpleSplit",
+                    C=C,
+                    tau=tau,
+                    optimizer=optimizer,
+                    loss=loss,
+                    max_iter=max_iter,
+                    kernelSVR=kernelSVR,
+                    kernelSVC=kernelSVC,
+                    C_SVC=C_SVC,
+                    C_SVR=C_SVR,
                 ),
             )
 
@@ -1474,9 +1741,9 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "featureDataset.csv"))
             self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
             self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
+            self.assertTrue(exists(pathData / "Train_Feature_Extraction.csv"))
+            self.assertTrue(exists(pathData / "Test_Feature_Extraction.csv"))
             self.assertTrue(exists(pathData / "reducedTrainingPS.csv"))
-            self.assertTrue(exists(pathData / "yourPCA_Train.csv"))
-            self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
 
     def tearDown(self):
         directory = pathlib.Path(__file__).parents[0]

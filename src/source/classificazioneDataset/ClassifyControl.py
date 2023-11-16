@@ -8,7 +8,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from threading import Thread
-from flask_login import current_user
 
 import flask
 from flask import request

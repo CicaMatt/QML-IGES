@@ -27,7 +27,7 @@ class PreprocessingControl:
         numColsFE = request.form.get("numColsFE", type=int)
         numColsFS = request.form.get("numColsFS", type=int)
         model = request.form.get("model")
-        if model != "None":
+        if model != None:
             classification = True
         else:
             classification = False
@@ -52,11 +52,14 @@ class PreprocessingControl:
         numRaws = utils.numberOfRows(userpath)
         numCols = utils.numberOfColumns(userpath)
         if featureExtraction and numColsFE > numCols:
-            numColsFE=numCols
+            print("Impossibile ridurre le colonne: numColsFE > numColsData")
+            return Response(status=400)
         if featureSelection and numColsFS > numCols:
-            numColsFS = numCols
+            print("Impossibile ridurre le colonne: numColsFS > numColsData")
+            return Response(status=400)
         if prototypeSelection and numRawsPS > numRaws:
-            numRawsPS=numRaws
+            print("Impossibile ridurre le righe: numRawsPS > numRawsData ")
+            return Response(status=400)
 
 
         PreprocessingControl.preprocessing(

@@ -32,7 +32,7 @@ class Dataset(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email_user = db.Column(db.VARCHAR(255), ForeignKey("user.email"))
-    name = db.Column(db.String(30), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
     path = db.Column(db.String(150), nullable=True)
     upload_date = db.Column(db.DateTime, nullable=False)
     validation = db.Column(db.String(50), nullable=False, default="None")

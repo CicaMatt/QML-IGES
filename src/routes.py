@@ -470,6 +470,7 @@ def smista():
         validation=validation,
         ps=bool(prototypeSelection),
         fe=bool(featureExtraction),
+        fs=bool(featureSelection),
         model=model,
     )
     db.session.add(salvataggiodatabase)
@@ -735,7 +736,7 @@ def smista():
         print(e)
 
     # Classificazione
-    if model != "None":
+    if model != None:
         print("\nClassification...")
         backend = request.form.get("backend")
         if request.form.get("token"):
