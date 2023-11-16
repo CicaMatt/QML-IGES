@@ -12,15 +12,14 @@ from src.source.model.models import User, Article, Dataset
 
 
 class GestioneControl:
-    @app.route("/gestione/", methods=["GET", "POST"])
-    def getList(self):
+    @app.route("/gestione", methods=["GET", "POST"])
+    def getList():
         """
         The function returns a list of users or administrators requested by an admin
 
         :return: redirect to index page
         """
         scelta = request.form.get("scelta")
-        print(scelta)
         if scelta == "listUser":
             list = GestioneControl.getListaUser()
             return render_template("showList.html", list=list)
