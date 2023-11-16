@@ -4,7 +4,9 @@ import os
 import pathlib
 import random
 import re
+import shutil
 import smtplib
+import time
 from datetime import timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -12,15 +14,17 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from os.path import exists
 from pathlib import Path
+from threading import Thread
 from zipfile import ZipFile
 
+import flask
 from cryptography.fernet import Fernet
-from flask import request, render_template, flash, send_from_directory, jsonify, abort, send_file
+from flask import request, render_template, flash, send_from_directory, jsonify, abort
 from flask_login import login_user, logout_user, current_user
-from qiskit import IBMQ
 
 from src import app, db
 from src.source.model.models import User
+from src.source.utils.cleanZip import delete_zip
 from src.source.utils.encryption import decrypt, encrypt
 
 
@@ -221,136 +225,149 @@ class UtenteControl:
 
     @app.route("/download", methods=["GET", "POST"])
     def download():
-        ID = request.form.get("id")
-        filename = request.form.get("filename")
-        filepath = Path.home() / "QMLdata" / current_user.email / ID
-        print(filename)
+        try:
+            ID = request.form.get("id")
+            filename = request.form.get("filename")
+            filepath = Path.home() / "QMLdata" / current_user.email / ID
 
-        if filename:
-            # Quando l'applicazione sarà hostata su un web server sostituire
-            # con un metodo di download fornito dal web server
-            zip_name = ''
-            if (filename == "Validation"):
-                zip_path = filepath / 'ValidationResult.zip'
-                zip_name = 'ValidationResult.zip'
-                zip = ZipFile(zip_path, 'w')
-                if exists(
+            if filename:
+                # Quando l'applicazione sarà hostata su un web server sostituire
+                # con un metodo di download fornito dal web server
+                zip_name = ''
+                if (filename == "Validation"):
+                    zip_path = filepath / 'ValidationResult.zip'
+                    zip_name = 'ValidationResult.zip'
+                    zip = ZipFile(zip_path, 'w')
+                    if exists(
+                            filepath /
+                            "Data_training.csv") and exists(
                         filepath /
-                        "Data_training.csv") and exists(
-                    filepath /
-                    "Data_testing.csv"):
-                    zip.write(
-                        filepath / "Data_training.csv",
-                        "data_training.csv")
-                    zip.write(
-                        filepath / 'Data_testing.csv',
-                        "data_testing.csv")
+                        "Data_testing.csv"):
+                        zip.write(
+                            filepath / "Data_training.csv",
+                            "data_training.csv")
+                        zip.write(
+                            filepath / 'Data_testing.csv',
+                            "data_testing.csv")
 
-                for count in itertools.count(start=1):
-                    str_test = "testing_fold_" + count.__str__() + ".csv"
-                    str_train = "training_fold_" + count.__str__() + ".csv"
-                    if exists(filepath / str_test):
-                        zip.write(filepath / str_test,
-                                  str_test)
-                        zip.write(filepath / str_train,
-                                  str_train)
-                    else:
-                        break
-                zip.close()
+                    for count in itertools.count(start=1):
+                        str_test = "testing_fold_" + count.__str__() + ".csv"
+                        str_train = "training_fold_" + count.__str__() + ".csv"
+                        if exists(filepath / str_test):
+                            zip.write(filepath / str_test,
+                                      str_test)
+                            zip.write(filepath / str_train,
+                                      str_train)
+                        else:
+                            break
+                    zip.close()
+                else:
+                    zip_path = filepath / 'PreprocessingResult.zip'
+                    zip_name = 'PreprocessingResult.zip'
+                    zip = ZipFile(zip_path, 'w')
+                    if exists(
+                            filepath /
+                            "DataSetTestPreprocessato.csv") and exists(
+                        filepath /
+                        "DataSetTrainPreprocessato.csv"):
+                        zip.write(
+                            filepath / 'DataSetTestPreprocessato.csv',
+                            'DataSetTestPreprocessato.csv')
+                        zip.write(
+                            filepath / 'DataSetTrainPreprocessato.csv',
+                            'DataSetTrainPreprocessato.csv')
+                    if exists(filepath / "doPredictionFE.csv"):
+                        zip.write(
+                            filepath / 'doPredictionFE.csv',
+                            'doPredictionFE.csv')
+                    if exists(filepath / "reducedTrainingPS.csv"):
+                        zip.write(
+                            filepath / 'reducedTrainingPS.csv',
+                            'reducedTrainingPS.csv')
+                    if exists(
+                            filepath /
+                            "Test_Feature_Extraction.csv") and exists(
+                        filepath /
+                        "Train_Feature_Extraction.csv"):
+                        zip.write(
+                            filepath / 'Test_Feature_Extraction.csv',
+                            'Test_Feature_Extraction.csv')
+                        zip.write(
+                            filepath / 'Train_Feature_Extraction.csv',
+                            'Train_Feature_Extraction.csv')
+                    if exists(filepath / "Train_Feature_Selection.csv"):
+                        zip.write(
+                            filepath / "Train_Feature_Selection.csv",
+                            "Train_Feature_Selection.csv")
+                    if exists(filepath / "Test_Feature_Selection.csv"):
+                        zip.write(
+                            filepath / "Test_Feature_Selection.csv",
+                            "Test_Feature_Selection.csv")
+
+                    if exists(filepath / "TrainImputation.csv"):
+                        zip.write(
+                            filepath / "TrainImputation.csv",
+                            "TrainImputation.csv")
+                    if exists(filepath / "TestImputation.csv"):
+                        zip.write(
+                            filepath / "TestImputation.csv",
+                            "TestImputation.csv")
+                    if exists(filepath / "PredictImputation.csv"):
+                        zip.write(
+                            filepath / "PredictImputation.csv",
+                            "PredictImputation.csv")
+                    if exists(filepath / "TrainScaled.csv"):
+                        zip.write(filepath / "TrainScaled.csv", "TrainScaled.csv")
+                    if exists(filepath / "TestScaled.csv"):
+                        zip.write(filepath / "TestScaled.csv", "TestScaled.csv")
+                    if exists(filepath / "PredictScaled.csv"):
+                        zip.write(
+                            filepath / "PredictScaled.csv",
+                            "PredictScaled.csv")
+                    zip.close()
+
+                return send_from_directory(
+                    directory=filepath,
+                    path=zip_name
+                )
             else:
-                zip_path = filepath / 'PreprocessingResult.zip'
-                zip_name = 'PreprocessingResult.zip'
-                zip = ZipFile(zip_path, 'w')
-                if exists(
-                        filepath /
-                        "DataSetTestPreprocessato.csv") and exists(
-                    filepath /
-                    "DataSetTrainPreprocessato.csv"):
-                    zip.write(
-                        filepath / 'DataSetTestPreprocessato.csv',
-                        'DataSetTestPreprocessato.csv')
-                    zip.write(
-                        filepath / 'DataSetTrainPreprocessato.csv',
-                        'DataSetTrainPreprocessato.csv')
-                if exists(filepath / "doPredictionFE.csv"):
-                    zip.write(
-                        filepath / 'doPredictionFE.csv',
-                        'doPredictionFE.csv')
-                if exists(filepath / "reducedTrainingPS.csv"):
-                    zip.write(
-                        filepath / 'reducedTrainingPS.csv',
-                        'reducedTrainingPS.csv')
-                if exists(
-                        filepath /
-                        "Test_Feature_Extraction.csv") and exists(
-                    filepath /
-                    "Train_Feature_Extraction.csv"):
-                    zip.write(
-                        filepath / 'Test_Feature_Extraction.csv',
-                        'Test_Feature_Extraction.csv')
-                    zip.write(
-                        filepath / 'Train_Feature_Extraction.csv',
-                        'Train_Feature_Extraction.csv')
-                if exists(filepath / "Train_Feature_Selection.csv"):
-                    zip.write(
-                        filepath / "Train_Feature_Selection.csv",
-                        "Train_Feature_Selection.csv")
-                if exists(filepath / "Test_Feature_Selection.csv"):
-                    zip.write(
-                        filepath / "Test_Feature_Selection.csv",
-                        "Test_Feature_Selection.csv")
+                flash(
+                    "Unable to download the file, try again",
+                    "error")
+                return render_template("downloadPage.html")
+        finally:
+            thread = Thread(target=delete_zip, args=(filepath,))
+            thread.setDaemon(True)
+            thread.start()
 
-                if exists(filepath / "TrainImputation.csv"):
-                    zip.write(
-                        filepath / "TrainImputation.csv",
-                        "TrainImputation.csv")
-                if exists(filepath / "TestImputation.csv"):
-                    zip.write(
-                        filepath / "TestImputation.csv",
-                        "TestImputation.csv")
-                if exists(filepath / "PredictImputation.csv"):
-                    zip.write(
-                        filepath / "PredictImputation.csv",
-                        "PredictImputation.csv")
-                if exists(filepath / "TrainScaled.csv"):
-                    zip.write(filepath / "TrainScaled.csv", "TrainScaled.csv")
-                if exists(filepath / "TestScaled.csv"):
-                    zip.write(filepath / "TestScaled.csv", "TestScaled.csv")
-                if exists(filepath / "PredictScaled.csv"):
-                    zip.write(
-                        filepath / "PredictScaled.csv",
-                        "PredictScaled.csv")
-                zip.close()
+    @app.route("/experimentDownload", methods=["GET", "POST"])
+    def experimentDownload():
+        try:
+            exp_id = request.form.get("expID")
+            filepath = Path.home() / "QMLdata" / current_user.email / exp_id
+
+            decrypt(filepath, current_user.key)
+
+            zip_name = 'Experiment_' + str(exp_id) + '.zip'
+            zip_file = ZipFile(filepath / zip_name, 'w')
+
+            for root, dirs, files in os.walk(filepath):
+                for file in files:
+                    if os.path.splitext(file)[1] == ".dat" or os.path.splitext(file)[1] == ".zip":
+                        continue
+                    zip_file.write(filepath / file, file)
+                    os.remove(filepath / file)
+
+            zip_file.close()
 
             return send_from_directory(
                 directory=filepath,
                 path=zip_name
             )
-        else:
-            flash(
-                "Unable to download the file, try again",
-                "error")
-            return render_template("downloadPage.html")
-
-    @app.route("/experimentDownload", methods=["GET", "POST"])
-    def experimentDownload():
-        id = request.form.get("param")
-        filepath = Path.home() / "QMLdata" / current_user.email / id
-
-        decrypt(filepath, current_user.key)
-
-        zip_name = 'Experiment_' + str(id) + '.zip'
-        zip_path = filepath
-        zipFile = ZipFile(zip_path / zip_name, 'w')
-
-        for root, dirs, files in os.walk(filepath):
-            for file in files:
-                if os.path.splitext(file)[1] == ".dat" or os.path.splitext(file)[1] == ".zip":
-                    continue
-                file_name = str(file)
-                zipFile.write(filepath / file_name, file_name)
-                os.remove(os.path.join(root, file))
-
-        zipFile.close()
-
-        return send_file(filepath / zip_name, as_attachment=True, download_name=zip_name)
+        except:
+            print("Error occurred during experiment download")
+            flash("Unable to download the file, try again", "error")
+        finally:
+            thread = Thread(target=delete_zip, args=(filepath,))
+            thread.setDaemon(True)
+            thread.start()

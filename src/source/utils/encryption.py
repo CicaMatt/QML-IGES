@@ -56,6 +56,10 @@ def decrypt(path, key):
             elif "txt" in file_name:
                 with open(file_path + '.txt', 'wb') as original_file:
                     original_file.write(binary_value)
+            # Model file
+            elif "model" in file_name:
+                with open(file_path + '.sav', 'wb') as original_file:
+                    original_file.write(binary_value)
             # CSV file
             else:
                 with open(file_path + '.csv', 'wb') as original_file:
