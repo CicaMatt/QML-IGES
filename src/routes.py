@@ -791,8 +791,8 @@ def smista():
             ),
         )
 
-    else:
-        encrypt(userpathToPredict, current_user.key)
+    # Experiment folder encryption
+    encrypt(userpathTrain.parent, current_user.key)
 
     print("\n\nSmista ha finito! To the Moon!")
     return render_template(

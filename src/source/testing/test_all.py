@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 import pathlib
+import shutil
 import unittest
 import warnings
 from datetime import datetime
@@ -649,7 +650,7 @@ class Test_signup(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -662,24 +663,25 @@ class Test_signup(TestCase):
         registered as a user
         """
         tester = app.test_client()
-        response = tester.post(
-            "/signup",
-            data=dict(
-                email="mariorossi12@gmail.com",
-                password="Password123",
-                confirmPassword="Password123",
-                username="Antonio de Curtis ",
-                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
-                nome="Antonio",
-                cognome="De Curtis",
-            ),
-        )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-        self.assertTrue(
-            User.query.filter_by(email="mariorossi12@gmail.com").first()
-        )
-        db.session.commit()
+        with tester:
+            response = tester.post(
+                "/signup",
+                data=dict(
+                    email="mariorossi12@gmail.com",
+                    password="Password123",
+                    confirmPassword="Password123",
+                    username="Antonio de Curtis ",
+                    token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
+                    nome="Antonio",
+                    cognome="De Curtis",
+                ),
+            )
+            statuscode = response.status_code
+            self.assertEqual(statuscode, 200)
+            self.assertTrue(
+                User.query.filter_by(email="mariorossi12@gmail.com").first()
+            )
+            db.session.commit()
 
     def test_signupInvalidToken(self):
         """
@@ -879,7 +881,7 @@ class Test_Login_Logout(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -981,7 +983,7 @@ class TestUser(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         tester = app.test_client(self)
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
@@ -1186,7 +1188,7 @@ class TestClassifyControl(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -1613,7 +1615,7 @@ class TestRoutes(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -1711,21 +1713,23 @@ class TestRoutes(unittest.TestCase):
                     email_user=current_user.email).order_by(
                     desc(
                         Dataset.id)).first().id)  # Find a way to get the id
-            self.assertTrue(exists(pathData / "Data_training.csv"))
-            self.assertTrue(exists(pathData / "Data_testing.csv"))
-            self.assertTrue(exists(pathData / "featureDataset.csv"))
-            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
-            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
-            self.assertTrue(exists(pathData / "Train_Feature_Extraction.csv"))
-            self.assertTrue(exists(pathData / "Test_Feature_Extraction.csv"))
-            self.assertTrue(exists(pathData / "reducedTrainingPS.csv"))
+            self.assertTrue(exists(pathData / "Data_training.dat"))
+            self.assertTrue(exists(pathData / "Data_testing.dat"))
+            self.assertTrue(exists(pathData / "featureDataset.dat"))
+            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.dat"))
+            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.dat"))
+            self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat"))
+            self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat"))
+            self.assertTrue(exists(pathData / "reducedTrainingPS.dat"))
 
     def tearDown(self):
         directory = pathlib.Path(__file__).parents[0]
         allFiles = os.listdir(directory)
-        csvFiles = [file for file in allFiles if file.endswith(".csv")]
+        csvFiles = [file for file in allFiles if file.endswith((".csv", ".txt", ".xlsx", ".png"))]
         for file in csvFiles:
             path = os.path.join(directory, file)
             os.remove(path)
+        if os.path.exists(directory / "testingFiles" / "model.sav"):
+            os.remove(directory / "testingFiles" / "model.sav")
         with app.app_context():
             db.drop_all()
