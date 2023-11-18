@@ -650,7 +650,7 @@ class Test_signup(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -881,7 +881,7 @@ class Test_Login_Logout(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -983,7 +983,7 @@ class TestUser(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         tester = app.test_client(self)
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
@@ -1061,7 +1061,7 @@ class TestList(TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         tester = app.test_client(self)
         with app.app_context():
@@ -1188,7 +1188,7 @@ class TestClassifyControl(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -1354,7 +1354,7 @@ class TestClassifyControl(unittest.TestCase):
                                                                     optimizer, loss, max_iter, kernelSVR, kernelSVC,
                                                                     C_SVC, C_SVR, id_dataset, user_id)
 
-            self.assertNotEqual(result, 1)
+            self.assertNotEqual(result["error"], 1)
             self.assertTrue(
                 exists(
                     pathlib.Path(__file__).parent
@@ -1415,7 +1415,7 @@ class TestClassifyControl(unittest.TestCase):
                                                                     C_SVC, C_SVR, id_dataset, user_id
             )
 
-            self.assertNotEqual(result, 1)
+            self.assertNotEqual(result["error"], 1)
             self.assertTrue(
                 exists(
                     pathlib.Path(__file__).parent
@@ -1477,7 +1477,7 @@ class TestIbmFail(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -1615,7 +1615,7 @@ class TestRoutes(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
