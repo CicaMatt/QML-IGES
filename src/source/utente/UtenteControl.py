@@ -167,7 +167,7 @@ class UtenteControl:
         email = request.form.get('email')
         utente = User.query.filter_by(email=email).first()
         if utente is None:
-            abort(400, "No user found associated with the email")
+            abort(400, "Error 400: Bad Request. No user found associated with the email")
         verification_code = str(random.randint(100000, 999999))
 
         msg = MIMEMultipart()
@@ -203,7 +203,7 @@ class UtenteControl:
             session.quit()
         except BaseException as e:
             print(e.with_traceback())
-            return abort(500, "Cannot send email")
+            return abort(500, "Error 500:Internal Server Error. Cannot send email")
         return jsonify({'verification_code': verification_code})
 
     @app.route("/newsletter", methods=["GET", "POST"])

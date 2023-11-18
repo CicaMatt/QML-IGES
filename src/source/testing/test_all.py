@@ -9,6 +9,7 @@ import warnings
 from datetime import datetime
 from os.path import exists
 from unittest import TestCase
+from unittest.mock import patch
 
 import flask
 from flask_login import UserMixin, AnonymousUserMixin
@@ -20,6 +21,7 @@ from src import app
 from src import db
 from src.source.model.models import Article, Dataset
 from src.source.model.models import User
+from src.source.utente.UtenteControl import UtenteControl
 from src.source.utils import utils
 from src.source.validazioneDataset import kFoldValidation
 from src.source.validazioneDataset import train_testSplit
@@ -985,7 +987,8 @@ class TestUser(TestCase):
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        tester = app.test_client(self)
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -1050,6 +1053,62 @@ class TestUser(TestCase):
             ).first()
         )
         db.session.commit()
+
+    def test_SetNewPW(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/SetNewPW",
+                data=dict(
+                    email="mariorossi12@gmail.com",
+                    pw="qwertyqwerty",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="mariorossi12@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode_emailNotFoundError(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="inesistente@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 400)
+
+    @patch('src.source.utente.UtenteControl.UtenteControl.resetPW')
+    def test_email_sending_failure(self, mock_send_email):
+        mock_send_email.side_effect = Exception("Errore durante l'invio dell'email")
+
+        with self.assertRaises(Exception):
+            UtenteControl.resetPW()
 
     def tearDown(self):
         with app.app_context():
