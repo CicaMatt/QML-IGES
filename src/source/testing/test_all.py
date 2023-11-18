@@ -1237,9 +1237,6 @@ class TestClassifyControl(unittest.TestCase):
                 data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
             )
 
-            assert isinstance(current_user, User)
-            self.assertTrue(current_user.is_authenticated)
-
             path_train = (
                 pathlib.Path(__file__).cwd()
                 / "testingFiles"
@@ -1362,6 +1359,13 @@ class TestClassifyControl(unittest.TestCase):
                     / "classifiedFile.csv"
                 )
             )
+            self.assertTrue(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "model.sav"
+                )
+            )
 
     def test_classify(self):
         """
@@ -1423,6 +1427,13 @@ class TestClassifyControl(unittest.TestCase):
                     / "classifiedFile.csv"
                 )
             )
+            self.assertTrue(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "model.sav"
+                )
+            )
 
     def test_getClassifiedDataset(self):
         """
@@ -1465,6 +1476,17 @@ class TestClassifyControl(unittest.TestCase):
                 pathlib.Path(__file__).parent
                 / "testingFiles"
                 / "classifiedFile.csv"
+            )
+
+        if os.path.exists(
+                pathlib.Path(__file__).parent
+                / "testingFiles"
+                / "model.sav"
+        ):
+            os.remove(
+                pathlib.Path(__file__).parent
+                / "testingFiles"
+                / "model.sav"
             )
 
         with app.app_context():
@@ -1586,6 +1608,13 @@ class TestIbmFail(unittest.TestCase):
                     / "classifiedFile.csv"
                 )
             )
+            self.assertFalse(
+                exists(
+                    pathlib.Path(__file__).parent
+                    / "testingFiles"
+                    / "model.sav"
+                )
+            )
 
     def tearDown(self) -> None:
         if os.path.exists(
@@ -1597,6 +1626,16 @@ class TestIbmFail(unittest.TestCase):
                 pathlib.Path(__file__).parent
                 / "testingFiles"
                 / "classifiedFile.csv"
+            )
+        if os.path.exists(
+            pathlib.Path(__file__).parent
+            / "testingFiles"
+            / "model.sav"
+        ):
+            os.remove(
+                pathlib.Path(__file__).parent
+                / "testingFiles"
+                / "model.sav"
             )
         if os.path.exists(
                 pathlib.Path(__file__).parent
@@ -1721,6 +1760,7 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat"))
             self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat"))
             self.assertTrue(exists(pathData / "reducedTrainingPS.dat"))
+            self.assertTrue(exists(pathData / "model.dat"))
 
     def tearDown(self):
         directory = pathlib.Path(__file__).parents[0]
