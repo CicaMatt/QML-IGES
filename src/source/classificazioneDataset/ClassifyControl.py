@@ -396,7 +396,7 @@ class ClassificazioneControl:
                 '<td><center><img style="width:25%;" src="cid:image"></center></td>',
                 'html'))
         img_path = open(
-            pathlib.Path(__file__).parents[2] /
+            pathlib.Path(__file__).resolve().parents[2] /
             "static" /
             "images" /
             "logos" /

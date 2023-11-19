@@ -123,7 +123,7 @@ class GestioneControl:
 
                 email.attach(MIMEText('<tr><center><img style="width:15%;" src="cid:image"></center></tr>', 'html'))
                 img_path = open(
-                    pathlib.Path(__file__).parents[2] / "static" / "images" / "logos" / "Logo_SenzaScritta.png",
+                    pathlib.Path(__file__).resolve().parents[2] / "static" / "images" / "logos" / "Logo_SenzaScritta.png",
                     "rb")
                 img = MIMEImage(img_path.read())
                 img.add_header('Content-ID', '<image>')

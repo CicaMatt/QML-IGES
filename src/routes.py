@@ -337,7 +337,7 @@ def addcomment():
 @app.route('/images/<path:filename>', methods=['GET'])
 def uploaded_files(filename):
     path = (
-            pathlib.Path(__file__).parents[0]
+            pathlib.Path(__file__).resolve().parents[0]
             / "static"
             / "images"
     )
@@ -352,7 +352,7 @@ def upload():
     if extension not in ['jpg', 'gif', 'png', 'jpeg']:
         return upload_fail(message='Image only!')
     uploaddir = (
-            pathlib.Path(__file__).parents[0]
+            pathlib.Path(__file__).resolve().parents[0]
             / "static"
             / "images"
     )

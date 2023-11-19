@@ -58,7 +58,7 @@ class TestRoutes(unittest.TestCase):
             backend = "ibmq_qasm_simulator"
             email = "quantumoonlight@gmail.com"
 
-            path = pathlib.Path(__file__).parent
+            path = pathlib.Path(__file__).resolve().parent
             pathpred = path / "testingFiles" / "bupaToPredict.csv"
             pathtrain = path / "testingFiles" / "bupa.csv"
 
@@ -103,7 +103,7 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
 
     def tearDown(self):
-        directory = pathlib.Path(__file__).parents[0]
+        directory = pathlib.Path(__file__).resolve().parents[0]
         allFiles = os.listdir(directory)
         csvFiles = [file for file in allFiles if file.endswith(".csv")]
         for file in csvFiles:

@@ -1,11 +1,12 @@
 import datetime
 from datetime import datetime
 from unittest import TestCase
-
+from unittest.mock import patch
+from cryptography.fernet import Fernet
 from sqlalchemy_utils import database_exists, create_database
-
 from src import app, db
 from src.source.model.models import User, Article
+from src.source.utente.UtenteControl import UtenteControl
 
 
 class TestUser(TestCase):
@@ -15,7 +16,8 @@ class TestUser(TestCase):
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        tester = app.test_client(self)
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -81,6 +83,62 @@ class TestUser(TestCase):
         )
         db.session.commit()
 
+    def test_SetNewPW(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/SetNewPW",
+                data=dict(
+                    email="mariorossi12@gmail.com",
+                    pw="qwertyqwerty",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="mariorossi12@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode_emailNotFoundError(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="inesistente@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 400)
+
+    @patch('src.source.utente.UtenteControl.UtenteControl.resetPW')
+    def test_email_sending_failure(self, mock_send_email):
+        mock_send_email.side_effect = Exception("Errore durante l'invio dell'email")
+
+        with self.assertRaises(Exception):
+            UtenteControl.resetPW()
+
     def tearDown(self):
         with app.app_context():
             db.drop_all()
@@ -94,6 +152,8 @@ class TestList(TestCase):
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         tester = app.test_client(self)
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -104,6 +164,8 @@ class TestList(TestCase):
                 username="Antonio de Curtis ",
                 name="Antonio",
                 surname="De Curtis",
+                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
+                key=Fernet.generate_key(),
             )
             user2 = User(
                 email="giuseppeverdi@gmail.com",
@@ -111,6 +173,8 @@ class TestList(TestCase):
                 username="giuVerdiProXX",
                 name="Giuseppe",
                 surname="Verdi",
+                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2",
+                key=Fernet.generate_key(),
             )
             art1 = Article(
                 email_user="mariorossi12@gmail.com",
@@ -118,6 +182,7 @@ class TestList(TestCase):
                 body="primobody",
                 category="primaCat",
                 data=datetime(2021, 12, 25),
+                author="giuVerdiProXX"
             )
             art2 = Article(
                 email_user="mariorossi12@gmail.com",
@@ -125,6 +190,7 @@ class TestList(TestCase):
                 body="secondoBody",
                 category="secondaCat",
                 data=datetime(2022, 1, 1),
+                author="giuVerdiProXX"
             )
             db.session.add(user1)
             db.session.add(user2)
@@ -138,13 +204,13 @@ class TestList(TestCase):
         test the functionality of getting all registered users to the site
         """
         tester = app.test_client()
-        with app.app_context():
-            db.create_all()
-        response = tester.post(
-            "/gestione/",
-            data=dict(scelta="listUser"),
-        )
-        statuscode = response.status_code
+        with tester:
+            response = tester.post(
+                "/gestione",
+                data=dict(scelta="listUser"),
+            )
+            statuscode = response.status_code
+
         self.assertEqual(statuscode, 200)
         self.assertTrue(User.query.filter_by(email="mariorossi12@gmail.com").first())
         self.assertTrue(User.query.filter_by(email="giuseppeverdi@gmail.com").first())
@@ -155,22 +221,25 @@ class TestList(TestCase):
         test the functionality of getting articles written by a user
         """
         tester = app.test_client()
-        with app.app_context():
-            db.create_all()
-        response = tester.post(
-            "/gestione/",
-            data=dict(
-                scelta="listArticlesUser",
-                email="mariorossi12@gmail.com",
-            ),
-        )
-        statuscode = response.status_code
+        with tester:
+            response = tester.post(
+                "/gestione",
+                data=dict(
+                    scelta="listArticlesUser",
+                    email="mariorossi12@gmail.com"
+                ),
+            )
+            statuscode = response.status_code
+
         self.assertEqual(statuscode, 200)
         self.assertTrue(
             Article.query.filter_by(
                 email_user="mariorossi12@gmail.com"
             ).limit(2)
         )
+
+        self.assertTrue(User.query.filter_by(email="mariorossi12@gmail.com").first())
+        self.assertTrue(User.query.filter_by(email="giuseppeverdi@gmail.com").first())
         db.session.commit()
 
     def test_listArticlesData(self):
@@ -178,10 +247,10 @@ class TestList(TestCase):
         tests the functionality of getting articles written between two dates
         """
         tester = app.test_client()
-        with app.app_context():
-            db.create_all()
+        # with app.app_context():
+        #     db.create_all()
         response = tester.post(
-            "/gestione/",
+            "/gestione",
             data=dict(
                 scelta="listArticlesData",
                 firstData="2021-12-20",
