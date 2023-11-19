@@ -8,3 +8,10 @@ def delete_zip(path):
         for file in files:
             if os.path.splitext(file)[1] == ".zip":
                 os.remove(path / file)
+
+
+def delete_unencrypted(path):
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if os.path.splitext(file)[1] != ".dat":
+                os.remove(path / file)

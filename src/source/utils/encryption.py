@@ -10,7 +10,7 @@ def encrypt(path, key):
 
     for root, dirs, files in os.walk(data_directory):
         for file in files:
-            if ".dat" in str(file):
+            if ".dat" in str(file) or ".key" in str(file):
                 continue
             file_name = os.path.splitext(file)[0]
             file_path = os.path.join(root, file)
@@ -25,7 +25,6 @@ def encrypt(path, key):
             new_file_path = os.path.join(data_directory, file_name + '.dat')
             with open(new_file_path, 'wb') as data:
                 data.write(encrypted_user_data)
-            os.remove(file_path)
 
 
 def decrypt(path, key):
@@ -34,7 +33,7 @@ def decrypt(path, key):
 
     for root, dirs, files in os.walk(data_directory):
         for file in files:
-            if not ".dat" in str(file):
+            if ".dat" not in str(file):
                 continue
             file_name = os.path.splitext(file)[0]
             file_path = os.path.join(root, file_name)

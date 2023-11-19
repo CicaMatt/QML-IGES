@@ -18,6 +18,7 @@ from src.source.preprocessingDataset import callPS
 from src.source.preprocessingDataset.aggId import addId
 from src.source.utils import addAttribute
 from src.source.utils import utils
+from src.source.utils.cleaning import delete_unencrypted
 from src.source.utils.encryption import encrypt
 
 
@@ -793,6 +794,7 @@ def smista():
 
     # Experiment folder encryption
     encrypt(userpathTrain.parent, current_user.key)
+    delete_unencrypted(userpathTrain.parent)
 
     print("\n\nSmista ha finito! To the Moon!")
     return render_template(

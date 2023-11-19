@@ -24,7 +24,7 @@ from flask_login import login_user, logout_user, current_user
 
 from src import app, db
 from src.source.model.models import User
-from src.source.utils.cleanZip import delete_zip
+from src.source.utils.cleaning import delete_zip
 from src.source.utils.encryption import decrypt, encrypt
 
 

@@ -8,6 +8,7 @@ from unittest import TestCase
 from cryptography.fernet import Fernet
 from flask_login import current_user, UserMixin, AnonymousUserMixin
 from sqlalchemy_utils import database_exists, create_database
+
 from src import app, db
 from src.source.model.models import User
 from src.source.utils.encryption import encrypt
