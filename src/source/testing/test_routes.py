@@ -3,11 +3,9 @@ import os
 import pathlib
 import unittest
 from os.path import exists
-
 from flask_login import current_user
 from sqlalchemy import desc
 from sqlalchemy_utils import create_database, database_exists
-
 from src import app, db
 from src.source.model.models import User, Dataset
 
@@ -19,6 +17,8 @@ class TestRoutes(unittest.TestCase):
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -27,7 +27,6 @@ class TestRoutes(unittest.TestCase):
     def test_routes(self):
         # Login User and test if that works
         tester = app.test_client()
-        self.assertFalse(current_user)
         with tester:
             # Setup for login testing
             password = "quercia12345"
@@ -51,12 +50,23 @@ class TestRoutes(unittest.TestCase):
             simpleSplit = True
             prototypeSelection = True
             featureExtraction = True
+            featureSelection = False
             numRowsPS = 10
             numColsFE = 2
-            doQSVM = True
+            numColsFS = 2
+            model = "SVC"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
-            backend = "ibmq_qasm_simulator"
+            backend = "aer_simulator"
             email = "quantumoonlight@gmail.com"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
 
             path = pathlib.Path(__file__).resolve().parent
             pathpred = path / "testingFiles" / "bupaToPredict.csv"
@@ -73,15 +83,25 @@ class TestRoutes(unittest.TestCase):
                     splitDataset=True,
                     reducePS=prototypeSelection,
                     reduceFE=featureExtraction,
-                    doQSVM=doQSVM,
+                    reduceFS=featureSelection,
+                    model=model,
                     simpleSplit=simpleSplit,
                     nrRows=numRowsPS,
-                    nrColumns=numColsFE,
+                    nrColumnsFE=numColsFE,
+                    nrColumnsFS=numColsFS,
                     backend=backend,
                     token=token,
                     email=email,
-                    Radio="simpleSplit"
-
+                    Radio="simpleSplit",
+                    C=C,
+                    tau=tau,
+                    optimizer=optimizer,
+                    loss=loss,
+                    max_iter=max_iter,
+                    kernelSVR=kernelSVR,
+                    kernelSVC=kernelSVC,
+                    C_SVC=C_SVC,
+                    C_SVR=C_SVR,
                 ),
             )
 
@@ -93,22 +113,25 @@ class TestRoutes(unittest.TestCase):
                     email_user=current_user.email).order_by(
                     desc(
                         Dataset.id)).first().id)  # Find a way to get the id
-            self.assertTrue(exists(pathData / "Data_training.csv"))
-            self.assertTrue(exists(pathData / "Data_testing.csv"))
-            self.assertTrue(exists(pathData / "featureDataset.csv"))
-            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.csv"))
-            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.csv"))
-            self.assertTrue(exists(pathData / "reducedTrainingPS.csv"))
-            self.assertTrue(exists(pathData / "yourPCA_Train.csv"))
-            self.assertTrue(exists(pathData / "yourPCA_Test.csv"))
+            self.assertTrue(exists(pathData / "Data_training.dat"))
+            self.assertTrue(exists(pathData / "Data_testing.dat"))
+            self.assertTrue(exists(pathData / "featureDataset.dat"))
+            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.dat"))
+            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.dat"))
+            self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat"))
+            self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat"))
+            self.assertTrue(exists(pathData / "reducedTrainingPS.dat"))
+            self.assertTrue(exists(pathData / "model.dat"))
 
     def tearDown(self):
         directory = pathlib.Path(__file__).resolve().parents[0]
         allFiles = os.listdir(directory)
-        csvFiles = [file for file in allFiles if file.endswith(".csv")]
+        csvFiles = [file for file in allFiles if file.endswith((".csv", ".txt", ".xlsx", ".png"))]
         for file in csvFiles:
             path = os.path.join(directory, file)
             os.remove(path)
+        if os.path.exists(directory / "testingFiles" / "model.sav"):
+            os.remove(directory / "testingFiles" / "model.sav")
         with app.app_context():
             db.drop_all()
 

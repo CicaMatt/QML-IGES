@@ -9,7 +9,7 @@ def log():
     dt_string = dataora.strftime("%d/%m/%Y %H:%M:%S")
     print("\n", dt_string)
     print("\n")
-    ROOT_DIR = Path(__file__).parents[2].__str__()
+    ROOT_DIR = Path(__file__).resolve().parents[2].__str__()
 
     file1 = open(ROOT_DIR + "\\log\\log.txt ", "a+")
 

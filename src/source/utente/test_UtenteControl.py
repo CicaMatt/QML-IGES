@@ -370,6 +370,23 @@ class Test_Login_Logout(TestCase):
             with ZipFile(path / 'zipfile.zip', 'r') as zip_ref:
                 self.assertIsNone(zip_ref.testzip())
 
+    def test_Download_invalidPath(self):
+        tester = app.test_client()
+        with tester:
+            tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia")
+            )
+
+            path = Path.home() / "QMLdata" / "boscoverde27@gmail.com" / "0"
+            encrypt(path, current_user.key)
+
+            response = tester.post(
+                "/experimentDownload",
+                data=dict(expID="0")
+            )
+            self.assertEqual(500, response.status_code)
+
     def tearDown(self):
         with app.app_context():
             db.drop_all()

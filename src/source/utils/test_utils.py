@@ -14,7 +14,7 @@ class Test_utils(TestCase):
         super().setUp()
 
     def test_encrypt(self):
-        path = Path(__file__).parent / "testingFiles"
+        path = Path(__file__).resolve().parent / "testingFiles"
         with open(path / "key.key", 'r') as file:
             key = file.read()
 
@@ -27,7 +27,7 @@ class Test_utils(TestCase):
         self.assertTrue(Path(path / "model_clear.dat").is_file())
 
     def test_decrypt(self):
-        path = Path(__file__).parent / "testingFiles"
+        path = Path(__file__).resolve().parent / "testingFiles"
         with open(path / "key.key", 'r') as file:
             key = file.read()
 
@@ -51,7 +51,7 @@ class Test_utils(TestCase):
                         open(Path(path / "model_clear.sav")).read())
 
     def test_encrypt_fail(self):
-        path = Path(__file__).parent / "testingFiles"
+        path = Path(__file__).resolve().parent / "testingFiles"
         with open(path / "key.key", 'r') as file:
             key = file.read()[10]
 
@@ -65,7 +65,7 @@ class Test_utils(TestCase):
         self.assertFalse(Path(path / "model_clear.dat").is_file())
 
     def test_decrypt_fail(self):
-        path = Path(__file__).parent / "testingFiles"
+        path = Path(__file__).resolve().parent / "testingFiles"
         with open(path / "key.key", 'r') as file:
             key = Fernet.generate_key()
 
@@ -79,7 +79,7 @@ class Test_utils(TestCase):
         self.assertFalse(Path(path / "model_encrypted.sav").is_file())
 
     def tearDown(self):
-        path = Path(__file__).parent / "testingFiles"
+        path = Path(__file__).resolve().parent / "testingFiles"
         for root, dirs, files in os.walk(path):
             for file in files:
                 if "clear.dat" in str(file):
