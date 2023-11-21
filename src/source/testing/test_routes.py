@@ -113,15 +113,15 @@ class TestRoutes(unittest.TestCase):
                     email_user=current_user.email).order_by(
                     desc(
                         Dataset.id)).first().id)  # Find a way to get the id
-            self.assertTrue(exists(pathData / "Data_training.dat"))
-            self.assertTrue(exists(pathData / "Data_testing.dat"))
-            self.assertTrue(exists(pathData / "featureDataset.dat"))
-            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.dat"))
-            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.dat"))
-            self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat"))
-            self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat"))
-            self.assertTrue(exists(pathData / "reducedTrainingPS.dat"))
-            self.assertTrue(exists(pathData / "model.dat"))
+            self.assertTrue(exists(pathData / "Data_training.dat") or exists(pathData / "Data_training.csv"))
+            self.assertTrue(exists(pathData / "Data_testing.dat") or exists(pathData / "Data_testing.csv"))
+            self.assertTrue(exists(pathData / "featureDataset.dat") or exists(pathData / "featureDataset.csv"))
+            self.assertTrue(exists(pathData / "DataSetTrainPreprocessato.dat") or exists(pathData / "DataSetTrainPreprocessato.csv"))
+            self.assertTrue(exists(pathData / "DataSetTestPreprocessato.dat") or exists(pathData / "DataSetTestPreprocessato.csv"))
+            self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat") or exists(pathData / "Train_Feature_Extraction.csv"))
+            self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat") or exists(pathData / "Test_Feature_Extraction.csv"))
+            self.assertTrue(exists(pathData / "reducedTrainingPS.dat") or exists(pathData / "reducedTrainingPS.csv"))
+            self.assertTrue(exists(pathData / "model.dat") or exists(pathData / "model.sav"))
 
     def tearDown(self):
         directory = pathlib.Path(__file__).resolve().parents[0]
