@@ -792,9 +792,9 @@ def smista():
             ),
         )
 
-    # Experiment folder encryption
-    encrypt(userpathTrain.parent, current_user.key)
-    delete_unencrypted(userpathTrain.parent)
+    else:
+        encrypt(userpathTrain.parent, current_user.key)
+        delete_unencrypted(userpathTrain.parent)
 
     print("\n\nSmista ha finito! To the Moon!")
     return render_template(

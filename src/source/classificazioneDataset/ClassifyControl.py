@@ -1,3 +1,4 @@
+import os.path
 import pathlib
 import smtplib
 import warnings
@@ -24,6 +25,8 @@ from src.source.classificazioneDataset.myQSVC import myQSVC
 from src.source.classificazioneDataset.myQSVR import myQSVR
 from src.source.model.models import Dataset, User
 from src.source.utils import utils
+from src.source.utils.cleaning import delete_unencrypted
+from src.source.utils.encryption import encrypt
 
 warnings.simplefilter(action="ignore", category=DeprecationWarning)
 
@@ -146,6 +149,8 @@ class ClassificazioneControl:
             ClassificazioneControl.get_classified_dataset(
                 self, result, path_prediction, email, model, backend)
 
+        encrypt(pathlib.Path(path_train).parent, User.query.filter_by(email=user_id).first().key)
+        delete_unencrypted(pathlib.Path(path_train).parent)
         return result
 
     def classify(
