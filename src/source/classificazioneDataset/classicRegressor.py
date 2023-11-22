@@ -58,6 +58,7 @@ class classicRegressor:
             rmse = math.sqrt(mse)
             result["regression_score"] = score
             result["rmse"] = rmse
+            result["trained_model"] = model
 
             # prediction
             start_time = time.time()
@@ -74,8 +75,6 @@ class classicRegressor:
             result["total_time"] = str(testing_time + training_time)[0:6]
             result["training_time"] = str(training_time)[0:6]
 
-            directory_path = os.path.dirname(pathTrain)
-            pickle.dump(model, open(directory_path + "/model.sav", 'wb'))
         except Exception as e:
             print(e)
             result["error"] = 1

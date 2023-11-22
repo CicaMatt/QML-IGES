@@ -1,5 +1,6 @@
 import os.path
 import pathlib
+import pickle
 import smtplib
 import warnings
 from email import encoders
@@ -57,7 +58,6 @@ class ClassificazioneControl:
         C_SVC = request.form.get("C_SVC")
         C_SVR = request.form.get("C_SVR")
         id_dataset = request.form.get("id_dataset")
-        user_id = request.form.get("User")
 
         thread = Thread(
             target=ClassificazioneControl.classification_thread,
@@ -80,8 +80,7 @@ class ClassificazioneControl:
                 kernelSVC,
                 C_SVC,
                 C_SVR,
-                id_dataset,
-                user_id))
+                id_dataset))
         thread.setDaemon(True)
         thread.start()
         flask.g = thread
@@ -106,8 +105,7 @@ class ClassificazioneControl:
             kernelSVC,
             C_SVC,
             C_SVR,
-            id_dataset,
-            user_id):
+            id_dataset):
         """
         The function is called from classify_control(), anc starts the async thread to run the classification,
         at the end of which the email with the result is sent, through the function get_classified_dataset()
@@ -144,13 +142,13 @@ class ClassificazioneControl:
             C_SVC,
             C_SVR,
             id_dataset,
-            user_id)
+            email)
         if result != 0:
             ClassificazioneControl.get_classified_dataset(
-                self, result, path_prediction, email, model, backend)
+                self, result, email, model, backend, id_dataset)
 
-        encrypt(pathlib.Path(path_train).parent, User.query.filter_by(email=user_id).first().key)
-        delete_unencrypted(pathlib.Path(path_train).parent)
+        encrypt(pathlib.Path().home() / "QMLdata" / email / id_dataset, User.query.filter_by(email=email).first().key)
+        delete_unencrypted(pathlib.Path().home() / "QMLdata" / email / id_dataset)
         return result
 
     def classify(
@@ -264,6 +262,9 @@ class ClassificazioneControl:
                 C,
                 tau)
             result = {**result, **r}
+            if not result["error"]:
+                result["trained_model"].save(
+                pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "PegasosQSVC.model")
 
         elif model == "QSVC":
             r = myQSVC.classify(
@@ -273,6 +274,9 @@ class ClassificazioneControl:
                 backend,
                 qubit)
             result = {**result, **r}
+            if not result["error"]:
+                result["trained_model"].save(
+                pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "QSVC.model")
 
         elif model == "Quantum Neural Network":
             r = myNeuralNetworkClassifier.classify(
@@ -285,6 +289,9 @@ class ClassificazioneControl:
                 loss,
                 max_iter)
             result = {**result, **r}
+            if not result["error"]:
+                result["trained_model"].save(
+                pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "NeuralNetworkClassifier.model")
 
         elif model == "QSVR":
             r = myQSVR.classify(
@@ -294,6 +301,9 @@ class ClassificazioneControl:
                 backend,
                 qubit)
             result = {**result, **r}
+            if not result["error"]:
+                result["trained_model"].save(
+                    pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "QSVR.model")
 
         elif model == "VQR":
             r = myNeuralNetworkRegressor.classify(
@@ -306,6 +316,8 @@ class ClassificazioneControl:
                 loss,
                 max_iter)
             result = {**result, **r}
+            if not result["error"]:
+                result["trained_model"].save(pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "NeuralNetworkRegressor.model")
 
         elif model == "SVC" or model == "K Neighbors Classifier" or model == "Naive Bayes" or model == "Decision Tree Classifier" or model == "Random Forest Classifier":
             r = classicClassifier.classify(
@@ -316,6 +328,8 @@ class ClassificazioneControl:
                 kernelSVC,
                 C_SVC)
             result = {**result, **r}
+            if not result["error"]:
+                pickle.dump(result["trained_model"], open(pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "model.sav", 'wb'))
 
         elif model == "SVR" or model == "Linear Regression":
             r = classicRegressor.classify(
@@ -326,6 +340,9 @@ class ClassificazioneControl:
                 kernelSVR,
                 C_SVR)
             result = {**result, **r}
+            if not result["error"]:
+                pickle.dump(result["trained_model"],
+                        open(pathlib.Path().home() / "QMLdata" / user_id / id_dataset / "model.sav", 'wb'))
 
         if result["error"] != 1:
 
@@ -351,7 +368,7 @@ class ClassificazioneControl:
             predicted_labels = result["predicted_labels"]
 
             classified_file = open(
-                pathlib.Path(user_path_to_predict).parent /
+                pathlib.Path().home() / "QMLdata" / user_id / id_dataset /
                 "classifiedFile.csv",
                 "w",
             )
@@ -378,10 +395,10 @@ class ClassificazioneControl:
     def get_classified_dataset(
             self,
             result,
-            userpathToPredict,
             email,
             model,
-            backend):
+            backend,
+            id_dataset):
         """
 
         :param result: dict used to add details sent through email
@@ -508,7 +525,7 @@ class ClassificazioneControl:
                         "- The used token has no privileges to use the selected backend<br>"
                         "</center></h6>", 'html'))
 
-            file = pathlib.Path(userpathToPredict).parent / \
+            file = pathlib.Path.home() / "QMLdata" / email / id_dataset / \
                 "classifiedFile.csv"
             attach_file = open(file, "rb")
             payload = MIMEBase("application", "octet-stream")

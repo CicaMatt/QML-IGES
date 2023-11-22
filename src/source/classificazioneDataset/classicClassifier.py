@@ -64,6 +64,7 @@ class classicClassifier:
             result["testing_precision"] = precision
             result["testing_recall"] = recall
             result["testing_accuracy"] = accuracy
+            result["trained_model"] = model
 
             # prediction
             start_time = time.time()
@@ -90,8 +91,6 @@ class classicClassifier:
 
             plt.show()
 
-            directory_path = os.path.dirname(pathTrain)
-            pickle.dump(model, open(directory_path + "/model.sav", 'wb'))
         except Exception as e:
             print(e)
             result["error"] = 1

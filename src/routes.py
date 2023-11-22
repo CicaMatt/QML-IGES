@@ -787,8 +787,7 @@ def smista():
                 kernelSVC=kernelSVC,
                 C_SVC=C_SVC,
                 C_SVR=C_SVR,
-                id_dataset=salvataggiodatabase.id,
-                User=current_user.get_id()
+                id_dataset=salvataggiodatabase.id
             ),
         )
 

@@ -91,6 +91,7 @@ class myNeuralNetworkRegressor:
 
             result["total_time"] = str(testing_time + training_time)[0:6]
             result["training_time"] = str(training_time)[0:6]
+            result["trained_model"] = vqr
 
             directory_path = os.path.dirname(pathTrain)
             vqr.save(directory_path + "/NeuralNetworkRegressor.model")

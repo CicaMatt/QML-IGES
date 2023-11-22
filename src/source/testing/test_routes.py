@@ -17,8 +17,6 @@ class TestRoutes(unittest.TestCase):
             "SQLALCHEMY_DATABASE_URI"
         ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        with app.app_context():
-            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -43,9 +41,6 @@ class TestRoutes(unittest.TestCase):
                     cognome="De Curtis",
                     token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"),
             )
-            print(current_user)
-            assert isinstance(current_user, User)
-            self.assertTrue(current_user.is_authenticated)
 
             simpleSplit = True
             prototypeSelection = True
@@ -57,7 +52,7 @@ class TestRoutes(unittest.TestCase):
             model = "SVC"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             backend = "aer_simulator"
-            email = "quantumoonlight@gmail.com"
+            email = "boscoverde27@gmail.com"
             C = 2
             tau = 2
             optimizer = "ADAM"

@@ -61,9 +61,7 @@ class myQSVR:
             rmse = math.sqrt(mse)
             result["regression_score"] = score
             result["rmse"] = rmse
-
-            directory_path = os.path.dirname(pathTrain)
-            qsvr.save(directory_path + "/QSVR.model")
+            result["trained_model"] = qsvr
 
             # prediction
             start_time = time.time()

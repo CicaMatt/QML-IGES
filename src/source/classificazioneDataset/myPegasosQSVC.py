@@ -65,9 +65,7 @@ class myPegasosQSVC:
             result["testing_precision"] = precision
             result["testing_recall"] = recall
             result["testing_accuracy"] = accuracy
-
-            directory_path = os.path.dirname(pathTrain)
-            qsvc.save(directory_path + "/PegasosQSVC.model")
+            result["trained_model"] = qsvc
 
             # prediction
             start_time = time.time()
