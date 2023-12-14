@@ -286,5 +286,6 @@ class TestSimpleSplit(unittest.TestCase):
 
     def tearDown(self):
         path = pathlib.Path(__file__).resolve().parent
-        # os.remove(path / "testingFiles/Data_testing.csv")
-        # os.remove(path / "testingFiles/Data_training.csv")
+        os.remove(path / "bupa.csv")
+        os.remove(path / "testingFiles/Data_testing.csv")
+        os.remove(path / "testingFiles/Data_training.csv")
