@@ -9,7 +9,7 @@ from src.source.gestione.test_GestioneControl import TestList, TestUser
 from src.source.preprocessingDataset.test_PreprocessingControl import TestPreprocessingControl
 from src.source.utils.test_utils import Test_utils
 from src.source.testing.test_routes import TestRoutes
-from src.source.classificazioneDataset.test_ClassifyControl import TestClassifyControl, TestIbmFail
+from src.source.classificazioneDataset.test_ClassifyControl import TestClassifyControl
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
