@@ -17,13 +17,12 @@ from src.source.utils import utils
 
 
 class TestClassifyControl(unittest.TestCase):
-
     @classmethod
     def setUpClass(self):
         super().setUpClass()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         if database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             with app.app_context():
                 drop_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -65,6 +64,23 @@ class TestClassifyControl(unittest.TestCase):
             path_exp = path / "1"
             if not path_exp.is_dir():
                 path_exp.mkdir()
+
+            if os.path.exists(
+                    pathlib.Path(__file__).resolve().parent
+                    / "testingFiles"
+                    / "classifiedFile.csv"
+            ):
+                os.remove(
+                    pathlib.Path(__file__).resolve().parent
+                    / "testingFiles"
+                    / "classifiedFile.csv"
+                )
+            open(
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "emptyFile.csv",
+                "w",
+            ).write("1234567890987654321")
 
 
     def test_classify_control(self):
@@ -300,82 +316,6 @@ class TestClassifyControl(unittest.TestCase):
         )
         self.assertEqual(value, 1)
 
-    def tearDown(self):
-        if os.path.exists(
-            pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1" / "classifiedFile.dat"
-        ):
-            os.remove(
-                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
-                / "classifiedFile.dat"
-            )
-
-        if os.path.exists(
-                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
-                / "model.dat"
-        ):
-            os.remove(
-                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
-                / "model.dat"
-            )
-
-class TestIbmFail(unittest.TestCase):
-
-    def setUp(self):
-
-        super().setUp()
-        app.config[
-            "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
-        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
-            create_database(app.config["SQLALCHEMY_DATABASE_URI"])
-        with app.app_context():
-            db.create_all()
-            password = "quercia1234"
-            password = hashlib.sha512(password.encode()).hexdigest()
-            utente = User(
-                email="boscoverde27@gmail.com",
-                password=password,
-                username="Antonio de Curtis",
-                name="Antonio",
-                surname="De Curtis",
-                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe5196" \
-                      "91a7ad17643eecbe13d1c8c4adccd2",
-                isResearcher=False,
-                key=Fernet.generate_key()
-            )
-            salvataggiodatabase = Dataset(
-                email_user="boscoverde27@gmail.com",
-                name="bupa.csv",
-                upload_date=datetime.now(),
-                validation="Simple Split",
-                ps=False,
-                fs=False,
-                fe=False,
-                model="Random Forest Classifier",
-            )
-            db.session.add(utente)
-            db.session.commit()
-            db.session.add(salvataggiodatabase)
-            db.session.commit()
-
-        if os.path.exists(
-            pathlib.Path(__file__).resolve().parent
-            / "testingFiles"
-            / "classifiedFile.csv"
-        ):
-            os.remove(
-                pathlib.Path(__file__).resolve().parent
-                / "testingFiles"
-                / "classifiedFile.csv"
-            )
-        open(
-            pathlib.Path(__file__).resolve().parent
-            / "testingFiles"
-            / "emptyFile.csv",
-            "w",
-        ).write("1234567890987654321")
-
     def test_classify_ibmFail(self):
         """
         Test the classify function with not valid train and test datasets, to make the IBM backend fail on purpose
@@ -387,17 +327,17 @@ class TestIbmFail(unittest.TestCase):
                 data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
             )
             path_train = (
-                pathlib.Path(__file__).resolve().parent
-                / "testingFiles"
-                / "DataSetTrainPreprocessato.csv"
+                    pathlib.Path(__file__).resolve().parent
+                    / "testingFiles"
+                    / "DataSetTrainPreprocessato.csv"
             )
             path_test = (
-                pathlib.Path(__file__).resolve().parent
-                / "testingFiles"
-                / "DataSetTestPreprocessato.csv"
+                    pathlib.Path(__file__).resolve().parent
+                    / "testingFiles"
+                    / "DataSetTestPreprocessato.csv"
             )
             path_prediction = (
-                pathlib.Path(__file__).resolve().parent / "testingFiles" / "emptyFile.csv"
+                    pathlib.Path(__file__).resolve().parent / "testingFiles" / "emptyFile.csv"
             )
             features = utils.createFeatureList(2)
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691" \
@@ -444,7 +384,26 @@ class TestIbmFail(unittest.TestCase):
                 )
             )
 
-    def tearDown(self) -> None:
+    def tearDown(self):
+        if os.path.exists(
+            pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1" / "classifiedFile.dat"
+        ):
+            os.remove(
+                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
+                / "classifiedFile.dat"
+            )
+
+        if os.path.exists(
+                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
+                / "model.dat"
+        ):
+            os.remove(
+                pathlib.Path().home() / "QMLdata" / "boscoverde27@gmail.com" / "1"
+                / "model.dat"
+            )
+
+        ###
+
         if os.path.exists(
                 pathlib.Path(__file__).resolve().parent
                 / "testingFiles"
@@ -475,3 +434,8 @@ class TestIbmFail(unittest.TestCase):
                 / "testingFiles"
                 / "emptyFile.dat"
             )
+
+    # @classmethod
+    # def tearDownClass(cls):
+    #     with app.app_context():
+    #         db.drop_all()
