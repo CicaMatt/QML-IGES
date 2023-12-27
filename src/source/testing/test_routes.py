@@ -1,6 +1,7 @@
 import hashlib
 import os
 import pathlib
+import time
 import unittest
 from os.path import exists
 from flask_login import current_user
@@ -15,7 +16,7 @@ class TestRoutes(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -118,17 +119,18 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "Train_Feature_Extraction.dat") or exists(pathData / "Train_Feature_Extraction.csv"))
             self.assertTrue(exists(pathData / "Test_Feature_Extraction.dat") or exists(pathData / "Test_Feature_Extraction.csv"))
             self.assertTrue(exists(pathData / "reducedTrainingPS.dat") or exists(pathData / "reducedTrainingPS.csv"))
+            time.sleep(0.5)
             self.assertTrue(exists(pathData / "model.dat") or exists(pathData / "model.sav"))
 
-    # def tearDown(self):
-    #     directory = pathlib.Path(__file__).resolve().parents[0]
-    #     allFiles = os.listdir(directory)
-    #     csvFiles = [file for file in allFiles if file.endswith((".csv", ".txt", ".xlsx", ".png"))]
-    #     for file in csvFiles:
-    #         path = os.path.join(directory, file)
-    #         os.remove(path)
-    #     if os.path.exists(directory / "testingFiles" / "model.sav"):
-    #         os.remove(directory / "testingFiles" / "model.sav")
-    #     with app.app_context():
-    #         db.drop_all()
+    def tearDown(self):
+        directory = pathlib.Path(__file__).resolve().parents[0]
+        allFiles = os.listdir(directory)
+        csvFiles = [file for file in allFiles if file.endswith((".csv", ".txt", ".xlsx", ".png"))]
+        for file in csvFiles:
+            path = os.path.join(directory, file)
+            os.remove(path)
+        if os.path.exists(directory / "testingFiles" / "model.sav"):
+            os.remove(directory / "testingFiles" / "model.sav")
+        with app.app_context():
+            db.drop_all()
 

@@ -1,6 +1,7 @@
 import hashlib
 import os
 import pathlib
+import time
 import unittest
 from datetime import datetime
 from os.path import exists
@@ -18,7 +19,7 @@ from src.source.utils import utils
 
 class TestClassifyControl(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         super().setUpClass()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
@@ -90,7 +91,6 @@ class TestClassifyControl(unittest.TestCase):
         """
         tester = app.test_client(self)
         with tester:
-
             response = tester.post(
                 "/login",
                 data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
@@ -266,10 +266,10 @@ class TestClassifyControl(unittest.TestCase):
                     Dataset.id)).first().id)
 
             result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
-                                                                    token, backend_selected, model, C, tau,
-                                                                    optimizer, loss, max_iter, kernelSVR, kernelSVC,
-                                                                    C_SVC, C_SVR, id_dataset, current_user.email
-            )
+                                                       token, backend_selected, model, C, tau,
+                                                       optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                       C_SVC, C_SVR, id_dataset, current_user.email
+                                                       )
 
             self.assertNotEqual(result["error"], 1)
             self.assertTrue(
@@ -435,7 +435,8 @@ class TestClassifyControl(unittest.TestCase):
                 / "emptyFile.dat"
             )
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     with app.app_context():
-    #         db.drop_all()
+    @classmethod
+    def tearDownClass(cls):
+        with app.app_context():
+            db.session.close_all()
+            db.drop_all()
