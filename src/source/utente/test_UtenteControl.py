@@ -1,13 +1,14 @@
 import hashlib
 import os
 import shutil
+import time
 from zipfile import ZipFile
 from pathlib import Path
 from unittest import TestCase
 
 from cryptography.fernet import Fernet
 from flask_login import current_user, UserMixin, AnonymousUserMixin
-from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy_utils import database_exists, create_database, drop_database
 
 from src import app, db
 from src.source.model.models import User
@@ -242,7 +243,9 @@ class Test_signup(TestCase):
 
     def tearDown(self):
         with app.app_context():
+            db.session.close_all()
             db.drop_all()
+        time.sleep(1)
 
 
 class Test_Login_Logout(TestCase):

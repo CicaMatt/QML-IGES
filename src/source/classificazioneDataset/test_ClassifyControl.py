@@ -23,7 +23,7 @@ class TestClassifyControl(unittest.TestCase):
         super().setUpClass()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         if database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             with app.app_context():
                 drop_database(app.config["SQLALCHEMY_DATABASE_URI"])

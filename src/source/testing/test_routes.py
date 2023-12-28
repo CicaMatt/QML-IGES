@@ -16,7 +16,7 @@ class TestRoutes(unittest.TestCase):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
