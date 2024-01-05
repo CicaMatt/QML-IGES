@@ -190,6 +190,13 @@
                         <br>
                             <input type="hidden" name="MAX_FILE_SIZE" value="300000000000000000000">
                             <h2 class="headTitle">Load your Dataset for Quantum Classification</h2>
+                        {% with messages = get_flashed_messages(category_filter = ["error"]) %}
+                          {% if messages %}
+                            {% for msg in messages %}
+                                <p id="errore" style="color:red;">{{msg}}</p>
+                            {% endfor %}
+                          {% endif %}
+                        {% endwith %}
                             <br> <!-- Train dataset -->
                             <div class="form-group">
                               <div class="input-group">

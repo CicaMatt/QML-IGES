@@ -69,12 +69,12 @@ class UtenteControl:
             return render_template("registration.html")
         if not re.fullmatch('^[A-zÀ-ù ‘-]{2,30}$', Name):
             flash(
-                "Invalid name, ,name must contain only alphabetical characters",
+                "invalid field, name must contain only alphabetic characters",
                 "error")
             return render_template("registration.html")
         if not re.fullmatch('^[A-zÀ-ù ‘-]{2,30}$', cognome):
             flash(
-                "Invalid surname, ,surname must contain only alphabetical characters",
+                "invalid field, surname must contain only alphabetic characters",
                 "error")
             return render_template("registration.html")
         if not ((token is None) or token.__len__() == 128):

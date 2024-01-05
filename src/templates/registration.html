@@ -28,7 +28,7 @@
           {% with messages = get_flashed_messages(category_filter = ["error"]) %}
           {% if messages %}
             {% for msg in messages %}
-                <p style="color:red;">{{msg}}</p>
+                <p id="errore" style="color:red;">{{msg}}</p>
             {% endfor %}
           {% endif %}
         {% endwith %}
@@ -47,7 +47,7 @@
                 <input type="checkbox" id="researcher" name="isResearcher" value="isResearcher"><label>&nbsp I am a Researcher</label><br>
        <input type="checkbox" id="privacy" name="accPrivacy" value="accPrivacy" ><label>&nbsp I accept the <a href="http://google.com" target="_blank"> Privacy</a></label><br>
           <input type="checkbox" id="term" name="accTerm" value="accTerm" ><label>&nbsp I agree with <a href="http://google.com" target="_blank">terms and conditions</a></label><br>
-            <input type="submit" class="fadeIn fourth" value="Sign In">
+            <input type="submit" id="submit" class="fadeIn fourth" value="Sign In">
     </form>
 
     <!-- Return to Log In page -->

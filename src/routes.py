@@ -402,10 +402,17 @@ def aboutUs():
 @login_required
 def smista():
     print("\nIn smista carico le richieste dal form...")
-    quantum_backends = [ "PegasosQSVC", "QuantumNeuralNetwork", "QSVC"]
     dataset_train = request.files.get("dataset_train")
     dataset_test = request.files.get("dataset_test")
     dataset_prediction = request.files.get("dataset_prediction")
+
+    if len(dataset_train.read()) == 0 or len(dataset_test.read()) == 0 or len(dataset_prediction.read()) == 0:
+        flash("Empty dataset inserted", "error")
+        return render_template("formDataset.html")
+
+    dataset_train.seek(0)
+    dataset_test.seek(0)
+    dataset_prediction.seek(0)
 
     autosplit = request.form.get("splitDataset")
     print("AutoSplit: ", autosplit)
