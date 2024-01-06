@@ -405,8 +405,8 @@ def smista():
     dataset_train = request.files.get("dataset_train")
     dataset_test = request.files.get("dataset_test")
     dataset_prediction = request.files.get("dataset_prediction")
-
-    if len(dataset_train.read()) == 0 or len(dataset_test.read()) == 0 or len(dataset_prediction.read()) == 0:
+    if (len(dataset_train.read()) == 0 or (dataset_test.filename != "" and len(dataset_test.read()) == 0)
+            or (dataset_prediction.filename != "" and len(dataset_prediction.read()) == 0)):
         flash("Empty dataset inserted", "error")
         return render_template("formDataset.html")
 

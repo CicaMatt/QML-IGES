@@ -16,10 +16,11 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from sqlalchemy import desc
 from sqlalchemy_utils import database_exists, create_database, drop_database
 
 from src import app, db
-from src.source.model.models import User
+from src.source.model.models import User, Dataset
 
 
 class TestDataset():
@@ -55,9 +56,15 @@ class TestDataset():
   
   def teardown_method(self):
     self.driver.quit()
-    with app.app_context():
-      db.session.close_all()
-      db.drop_all()
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root@127.0.0.1/quantumknn_db"
+    if database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+      with app.app_context():
+        result = Dataset.query.filter_by(email_user="ADeCurtis123@gmail.com").order_by(desc(Dataset.id)).first()
+        if result is not None:
+          db.session.delete(result)
+          db.session.commit()
+        db.session.delete(User.query.filter_by(email="ADeCurtis123@gmail.com").first())
+        db.session.commit()
   
   def test_form_success(self):
     self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaTest.csv"))
