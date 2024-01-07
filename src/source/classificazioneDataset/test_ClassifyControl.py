@@ -283,6 +283,195 @@ class TestClassifyControl(unittest.TestCase):
                 )
             )
 
+    def test_classify_QSVC(self):
+        """
+        Test the classify function with correct parameters and input files, and check if the classification result
+        file is created
+        """
+
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
+            )
+
+            path_train = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).resolve().parent / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519" \
+                    "691a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            model = "QSVC"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+
+            result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
+                                                       token, backend_selected, model, C, tau,
+                                                       optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                       C_SVC, C_SVR, id_dataset, current_user.email
+                                                       )
+
+            self.assertNotEqual(result["error"], 1)
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "classifiedFile.csv"
+                )
+            )
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "QSVC.model"
+                )
+            )
+
+    def test_classify_NNClassifier(self):
+        """
+        Test the classify function with correct parameters and input files, and check if the classification result
+        file is created
+        """
+
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
+            )
+
+            path_train = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).resolve().parent / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519" \
+                    "691a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            model = "Quantum Neural Network"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+
+            result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
+                                                       token, backend_selected, model, C, tau,
+                                                       optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                       C_SVC, C_SVR, id_dataset, current_user.email
+                                                       )
+
+            self.assertNotEqual(result["error"], 1)
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "classifiedFile.csv"
+                )
+            )
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "NeuralNetworkClassifier.model"
+                )
+            )
+
+    def test_classify_Pegasos_QSVC(self):
+        """
+        Test the classify function with correct parameters and input files, and check if the classification result
+        file is created
+        """
+
+        tester = app.test_client(self)
+        with tester:
+            response = tester.post(
+                "/login",
+                data=dict(email="boscoverde27@gmail.com", password="quercia1234"),
+            )
+
+            path_train = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTrainPreprocessato.csv"
+            )
+            path_test = (
+                pathlib.Path(__file__).resolve().parent
+                / "testingFiles"
+                / "DataSetTestPreprocessato.csv"
+            )
+            path_prediction = (
+                pathlib.Path(__file__).resolve().parent / "testingFiles" / "doPrediction.csv"
+            )
+            features = utils.createFeatureList(2)
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519" \
+                    "691a7ad17643eecbe13d1c8c4adccd2"
+            backend_selected = "aer_simulator"
+            model = "Pegasos QSVC"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+            id_dataset = str(Dataset.query.filter_by(
+                email_user=current_user.email).order_by(
+                desc(
+                    Dataset.id)).first().id)
+
+            result = ClassificazioneControl().classify(path_train, path_test, path_prediction, features,
+                                                       token, backend_selected, model, C, tau,
+                                                       optimizer, loss, max_iter, kernelSVR, kernelSVC,
+                                                       C_SVC, C_SVR, id_dataset, current_user.email
+                                                       )
+
+            self.assertNotEqual(result["error"], 1)
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "classifiedFile.csv"
+                )
+            )
+            self.assertTrue(
+                exists(
+                    pathlib.Path().home() / "QMLdata" / current_user.email / id_dataset / "PegasosQSVC.model"
+                )
+            )
+
     def test_getClassifiedDataset(self):
         """
         Test the function that send the email, with fixed parameters as input

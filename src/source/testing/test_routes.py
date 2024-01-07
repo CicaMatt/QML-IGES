@@ -1,6 +1,7 @@
 import hashlib
 import os
 import pathlib
+import shutil
 import time
 import unittest
 from os.path import exists
@@ -133,4 +134,6 @@ class TestRoutes(unittest.TestCase):
             os.remove(directory / "testingFiles" / "model.sav")
         with app.app_context():
             db.drop_all()
+        if os.path.exists(pathlib.Path.home() / "QMLdata" / "boscoverde27@gmail.com"):
+            shutil.rmtree(pathlib.Path.home() / "QMLdata" / "boscoverde27@gmail.com")
 
