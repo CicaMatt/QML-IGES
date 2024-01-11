@@ -696,6 +696,7 @@ def smista():
         ),
     )
     if validation == "K Fold":
+        encrypt(userpathTrain.parent, current_user.key)
         return render_template(
             "downloadPage.html",
             ID=salvataggiodatabase.id)
