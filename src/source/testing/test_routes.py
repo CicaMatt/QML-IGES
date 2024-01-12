@@ -5,6 +5,8 @@ import shutil
 import time
 import unittest
 from os.path import exists
+
+import flask
 from flask_login import current_user
 from sqlalchemy import desc
 from sqlalchemy_utils import create_database, database_exists
@@ -13,20 +15,20 @@ from src.source.model.models import User, Dataset
 
 
 class TestRoutes(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        with app.app_context():
-            db.session.close_all()
-            db.drop_all()
+    # @classmethod
+    # def setUpClass(cls):
+    #     with app.app_context():
+    #         db.session.close_all()
+    #         db.drop_all()
 
     def setUp(self):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://admin@127.0.0.1/test_db"
+        ] = "mysql://root@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        # with app.app_context():
-        #     db.drop_all()
+        with app.app_context():
+            db.drop_all()
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
@@ -236,6 +238,7 @@ class TestRoutes(unittest.TestCase):
             time.sleep(0.5)
             self.assertTrue(exists(pathData / "model.dat") or exists(pathData / "model.sav"))
 
+
     def test_routes_3(self):
         tester = app.test_client()
         with tester:
@@ -309,6 +312,9 @@ class TestRoutes(unittest.TestCase):
 
 
     def tearDown(self):
+        thread = flask.g
+        thread.join()
+
         directory = pathlib.Path(__file__).resolve().parents[0]
         allFiles = os.listdir(directory)
         csvFiles = [file for file in allFiles if file.endswith((".csv", ".txt", ".xlsx", ".png"))]
