@@ -142,7 +142,6 @@ class TestRoutes(unittest.TestCase):
             )
 
             # Default parameters
-            numRowsPS = 10
             numColsFE = 2
             numColsFS = 2
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
@@ -178,7 +177,7 @@ class TestRoutes(unittest.TestCase):
                     model="SVR",
                     simpleSplit=True,
                     Radio="simpleSplit",
-                    nrRows=numRowsPS,
+                    nrRows=50,
                     nrColumnsFE=numColsFE,
                     nrColumnsFS=numColsFS,
                     backend=backend,
@@ -237,7 +236,6 @@ class TestRoutes(unittest.TestCase):
             )
 
             # Default parameters
-            numColsFE = 2
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             email = "boscoverde27@gmail.com"
             path = pathlib.Path(__file__).resolve().parent
@@ -258,7 +256,7 @@ class TestRoutes(unittest.TestCase):
                     Radio="kFold",
                     kFold=True,
                     kFoldValue=10,
-                    nrColumnsFE=numColsFE,
+                    nrColumnsFE=4,
                     token=token,
                     email=email,
                 ),
@@ -292,9 +290,104 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "testing_fold_9.dat") or exists(pathData / "testing_fold_9.csv"))
             self.assertTrue(exists(pathData / "testing_fold_10.dat") or exists(pathData / "testing_fold_10.csv"))
 
+    def test_routes_4(self):
+        tester = app.test_client()
+        with tester:
+            password = "quercia12345"
+            password = hashlib.sha512(password.encode()).hexdigest()
+            tester.post(
+                "/signup",
+                data=dict(
+                    email="boscoverde27@gmail.com",
+                    password=password,
+                    confirmPassword=password,
+                    username="Antonio",
+                    isResearcher="",
+                    nome="Antonio",
+                    cognome="De Curtis",
+                    token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"),
+            )
+
+            # Default parameters
+            numRowsPS = 10
+            nrColumnsFE = 2
+            token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
+            backend = "aer_simulator"
+            email = "boscoverde27@gmail.com"
+            C = 2
+            tau = 2
+            optimizer = "ADAM"
+            loss = "squared_error"
+            max_iter = 10
+            kernelSVR = "rbf"
+            kernelSVC = "rbf"
+            C_SVC = 1
+            C_SVR = 1
+
+            path = pathlib.Path(__file__).resolve().parent
+            pathpred = path / "testingFiles" / "bupaToPredict.csv"
+            pathtrain = path / "testingFiles" / "bupa.csv"
+
+            # Test smista with that the whole validation/preprocessing/classification process
+            response = tester.post(
+                "/formcontrol",
+                data=dict(
+                    dataset_train=open(pathtrain.__str__(), "rb"),
+                    dataset_test=open(pathpred.__str__(), "rb"),
+                    dataset_prediction=open(pathpred.__str__(), "rb"),
+                    splitDataset=True,
+                    reducePS=True,
+                    reduceFE=True,
+                    reduceFS=False,
+                    model="SVC",
+                    simpleSplit=True,
+                    Radio="simpleSplit",
+                    scaling="Standard",
+                    nrColumnsFS=10,
+                    nrRows=numRowsPS,
+                    nrColumnsFE=nrColumnsFE,
+                    backend=backend,
+                    token=token,
+                    email=email,
+                    C=C,
+                    tau=tau,
+                    optimizer=optimizer,
+                    loss=loss,
+                    max_iter=max_iter,
+                    kernelSVR=kernelSVR,
+                    kernelSVC=kernelSVC,
+                    C_SVC=C_SVC,
+                    C_SVR=C_SVR,
+                ),
+            )
+
+            statuscode = response.status_code
+            self.assertEqual(statuscode, 500)
+            pathData = pathlib.Path.home() / "QMLdata" / current_user.email / str(
+                Dataset.query.filter_by(
+                    email_user=current_user.email).order_by(
+                    desc(
+                        Dataset.id)).first().id)
+            self.assertTrue(exists(pathData / "Data_training.dat") or exists(pathData / "Data_training.csv"))
+            self.assertTrue(exists(pathData / "Data_testing.dat") or exists(pathData / "Data_testing.csv"))
+            self.assertTrue(exists(pathData / "featureDataset.dat") or exists(pathData / "featureDataset.csv"))
+            self.assertFalse(exists(pathData / "DataSetTrainPreprocessato.dat") or exists(
+                pathData / "DataSetTrainPreprocessato.csv"))
+            self.assertFalse(
+                exists(pathData / "DataSetTestPreprocessato.dat") or exists(pathData / "DataSetTestPreprocessato.csv"))
+            self.assertFalse(
+                exists(pathData / "Train_Feature_Extraction.dat") or exists(pathData / "Train_Feature_Extraction.csv"))
+            self.assertFalse(
+                exists(pathData / "Test_Feature_Extraction.dat") or exists(pathData / "Test_Feature_Extraction.csv"))
+            self.assertFalse(exists(pathData / "reducedTrainingPS.dat") or exists(pathData / "reducedTrainingPS.csv"))
+            self.assertFalse(exists(pathData / "model.dat") or exists(pathData / "model.sav"))
+
     def tearDown(self):
-        thread = flask.g
-        thread.join()
+        try:
+            thread = flask.g
+            thread.join()
+        except:
+            print("No active thread")
 
         directory = pathlib.Path(__file__).resolve().parents[0]
         allFiles = os.listdir(directory)
