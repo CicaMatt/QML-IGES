@@ -15,17 +15,11 @@ from src.source.model.models import User, Dataset
 
 
 class TestRoutes(unittest.TestCase):
-    # @classmethod
-    # def setUpClass(cls):
-    #     with app.app_context():
-    #         db.session.close_all()
-    #         db.drop_all()
-
     def setUp(self):
         super().setUp()
         app.config[
             "SQLALCHEMY_DATABASE_URI"
-        ] = "mysql://root@127.0.0.1/test_db"
+        ] = "mysql://admin@127.0.0.1/test_db"
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         with app.app_context():
             db.drop_all()
@@ -37,10 +31,9 @@ class TestRoutes(unittest.TestCase):
     def test_routes_1(self):
         tester = app.test_client()
         with tester:
-            # Setup for login testing
             password = "quercia12345"
             password = hashlib.sha512(password.encode()).hexdigest()
-            response = tester.post(
+            tester.post(
                 "/signup",
                 data=dict(
                     email="boscoverde27@gmail.com",
@@ -53,15 +46,10 @@ class TestRoutes(unittest.TestCase):
                     token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"),
             )
 
-            simpleSplit = True
-            scaling = "Standard"
-            prototypeSelection = True
-            featureExtraction = True
-            featureSelection = False
+            # Default parameters
             numRowsPS = 10
             numColsFE = 2
             numColsFS = 2
-            model = "SVC"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             backend = "aer_simulator"
             email = "boscoverde27@gmail.com"
@@ -87,19 +75,20 @@ class TestRoutes(unittest.TestCase):
                     dataset_test=open(pathpred.__str__(), "rb"),
                     dataset_prediction=open(pathpred.__str__(), "rb"),
                     splitDataset=True,
-                    scaling=scaling,
-                    reducePS=prototypeSelection,
-                    reduceFE=featureExtraction,
-                    reduceFS=featureSelection,
-                    model=model,
-                    simpleSplit=simpleSplit,
+                    reducePS=True,
+                    reduceFE=True,
+                    reduceFS=False,
+                    model="SVC",
+                    simpleSplit=True,
+                    data_imputation=True,
+                    Radio="simpleSplit",
+                    scaling="Standard",
                     nrRows=numRowsPS,
                     nrColumnsFE=numColsFE,
                     nrColumnsFS=numColsFS,
                     backend=backend,
                     token=token,
                     email=email,
-                    Radio="simpleSplit",
                     C=C,
                     tau=tau,
                     optimizer=optimizer,
@@ -152,18 +141,10 @@ class TestRoutes(unittest.TestCase):
                     token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"),
             )
 
-            simpleSplit = True
-            data_imputation = True
-            scaling = "MinMax"
-            balancing = True
-            prototypeSelection = True
-            featureExtraction = False
-            featureSelection = True
-
+            # Default parameters
             numRowsPS = 10
             numColsFE = 2
             numColsFS = 2
-            model = "SVR"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             backend = "aer_simulator"
             email = "boscoverde27@gmail.com"
@@ -189,21 +170,20 @@ class TestRoutes(unittest.TestCase):
                     dataset_test=open(pathpred.__str__(), "rb"),
                     dataset_prediction=open(pathpred.__str__(), "rb"),
                     splitDataset=True,
-                    reducePS=prototypeSelection,
-                    reduceFE=featureExtraction,
-                    reduceFS=featureSelection,
-                    data_imputation=data_imputation,
-                    scaling=scaling,
-                    balancing=balancing,
-                    model=model,
-                    simpleSplit=simpleSplit,
+                    reducePS=True,
+                    reduceFE=False,
+                    reduceFS=True,
+                    scaling="MinMax",
+                    balancing=True,
+                    model="SVR",
+                    simpleSplit=True,
+                    Radio="simpleSplit",
                     nrRows=numRowsPS,
                     nrColumnsFE=numColsFE,
                     nrColumnsFS=numColsFS,
                     backend=backend,
                     token=token,
                     email=email,
-                    Radio="simpleSplit",
                     C=C,
                     tau=tau,
                     optimizer=optimizer,
@@ -238,7 +218,6 @@ class TestRoutes(unittest.TestCase):
             time.sleep(0.5)
             self.assertTrue(exists(pathData / "model.dat") or exists(pathData / "model.sav"))
 
-
     def test_routes_3(self):
         tester = app.test_client()
         with tester:
@@ -257,17 +236,10 @@ class TestRoutes(unittest.TestCase):
                     token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"),
             )
 
-            kFold = True
-            kFoldValue = 10
-            prototypeSelection = False
-            featureExtraction = True
-            featureSelection = False
+            # Default parameters
             numColsFE = 2
-            model = "None"
             token = "43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
             email = "boscoverde27@gmail.com"
-
-
             path = pathlib.Path(__file__).resolve().parent
             pathpred = path / "testingFiles" / "bupaToPredict.csv"
             pathtrain = path / "testingFiles" / "bupa.csv"
@@ -279,16 +251,16 @@ class TestRoutes(unittest.TestCase):
                     dataset_train=open(pathtrain.__str__(), "rb"),
                     dataset_test=open(pathpred.__str__(), "rb"),
                     dataset_prediction=open(pathpred.__str__(), "rb"),
-                    reducePS=prototypeSelection,
-                    reduceFE=featureExtraction,
-                    reduceFS=featureSelection,
-                    model=model,
-                    kFold=kFold,
-                    kFoldValue=kFoldValue,
+                    reducePS=False,
+                    reduceFE=True,
+                    reduceFS=False,
+                    model="None",
+                    Radio="kFold",
+                    kFold=True,
+                    kFoldValue=10,
                     nrColumnsFE=numColsFE,
                     token=token,
                     email=email,
-                    Radio="kFold",
                 ),
             )
 
@@ -309,7 +281,16 @@ class TestRoutes(unittest.TestCase):
             self.assertTrue(exists(pathData / "training_fold_8.dat") or exists(pathData / "training_fold_8.csv"))
             self.assertTrue(exists(pathData / "training_fold_9.dat") or exists(pathData / "training_fold_9.csv"))
             self.assertTrue(exists(pathData / "training_fold_10.dat") or exists(pathData / "training_fold_10.csv"))
-
+            self.assertTrue(exists(pathData / "testing_fold_1.dat") or exists(pathData / "testing_fold_1.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_2.dat") or exists(pathData / "testing_fold_2.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_3.dat") or exists(pathData / "testing_fold_3.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_4.dat") or exists(pathData / "testing_fold_4.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_5.dat") or exists(pathData / "testing_fold_5.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_6.dat") or exists(pathData / "testing_fold_6.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_7.dat") or exists(pathData / "testing_fold_7.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_8.dat") or exists(pathData / "testing_fold_8.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_9.dat") or exists(pathData / "testing_fold_9.csv"))
+            self.assertTrue(exists(pathData / "testing_fold_10.dat") or exists(pathData / "testing_fold_10.csv"))
 
     def tearDown(self):
         thread = flask.g
@@ -328,10 +309,3 @@ class TestRoutes(unittest.TestCase):
         with app.app_context():
             db.session.close_all()
             db.drop_all()
-
-
-    # @classmethod
-    # def tearDownClass(cls):
-    #     with app.app_context():
-    #         db.session.close_all()
-    #         db.drop_all()
