@@ -66,14 +66,28 @@ class TestDataset():
         db.session.delete(User.query.filter_by(email="ADeCurtis123@gmail.com").first())
         db.session.commit()
   
-  def test_form_success(self):
-    self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaTest.csv"))
+  def test_form_success_train_pred(self):
+    self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupa.csv"))
     self.driver.find_element(By.ID, "inputFilePrediction").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaToPredict.csv"))
     element = self.driver.find_element(By.ID, "submitForm")
     self.driver.execute_script("arguments[0].click();", element)
     assert self.driver.current_url == "http://127.0.0.1:5000/formcontrol"
 
-  def test_form_empty_files(self):
+  def test_form_success_train_test_pred(self):
+    self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupa.csv"))
+    self.driver.find_element(By.ID, "inputFilePrediction").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaToPredict.csv"))
+    self.driver.find_element(By.ID, "inputFileTest").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaTest.csv"))
+    element = self.driver.find_element(By.ID, "submitForm")
+    self.driver.execute_script("arguments[0].click();", element)
+    assert self.driver.current_url == "http://127.0.0.1:5000/formcontrol"
+
+  def test_form_success_only_train(self):
+    self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupa.csv"))
+    element = self.driver.find_element(By.ID, "submitForm")
+    self.driver.execute_script("arguments[0].click();", element)
+    assert self.driver.current_url == "http://127.0.0.1:5000/formcontrol"
+
+  def test_form_empty_train(self):
     path = pathlib.Path(__file__).resolve().parent.parent / "testingFiles"
     open(
       path
@@ -91,3 +105,41 @@ class TestDataset():
 
     assert "Empty dataset inserted" == msg_content
 
+  def test_form_empty_prediction(self):
+    path = pathlib.Path(__file__).resolve().parent.parent / "testingFiles"
+    open(
+      path
+      / "emptyFile.csv",
+      "w",
+    ).write("")
+    self.driver.find_element(By.ID, "inputFileTrain").send_keys(str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupa.csv"))
+    self.driver.find_element(By.ID, "inputFilePrediction").send_keys(str(path / "emptyFile.csv"))
+    element = self.driver.find_element(By.ID, "submitForm")
+    self.driver.execute_script("arguments[0].click();", element)
+    WebDriverWait(self.driver, 10).until(
+      EC.presence_of_element_located((By.CSS_SELECTOR, 'p#errore'))
+    )
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Empty dataset inserted" == msg_content
+
+  def test_form_empty_test(self):
+    path = pathlib.Path(__file__).resolve().parent.parent / "testingFiles"
+    open(
+      path
+      / "emptyFile.csv",
+      "w",
+    ).write("")
+    self.driver.find_element(By.ID, "inputFileTrain").send_keys(
+      str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupa.csv"))
+    self.driver.find_element(By.ID, "inputFilePrediction").send_keys(
+      str(pathlib.Path(__file__).resolve().parent.parent / "testingFiles" / "bupaToPredict.csv"))
+    self.driver.find_element(By.ID, "inputFileTest").send_keys(str(path / "emptyFile.csv"))
+    element = self.driver.find_element(By.ID, "submitForm")
+    self.driver.execute_script("arguments[0].click();", element)
+    WebDriverWait(self.driver, 10).until(
+      EC.presence_of_element_located((By.CSS_SELECTOR, 'p#errore'))
+    )
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Empty dataset inserted" == msg_content

@@ -51,6 +51,21 @@ class TestLogin():
         self.driver.get("http://127.0.0.1:5000/")
         self.driver.set_window_size(1936, 1048)
         self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+        self.driver.find_element(By.ID, "login").send_keys("test@gmail.com")
+        self.driver.find_element(By.ID, "password").send_keys("Password123")
+        self.driver.find_element(By.CSS_SELECTOR, ".fourth").click()
+
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'p#errore'))
+        )
+        msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+        assert "Utente non registrato" == msg_content
+
+    def test_user_invalid(self):
+        self.driver.get("http://127.0.0.1:5000/")
+        self.driver.set_window_size(1936, 1048)
+        self.driver.find_element(By.CSS_SELECTOR, ".user").click()
         self.driver.find_element(By.ID, "login").send_keys("ADeCurtis123gmail.com")
         self.driver.find_element(By.ID, "password").send_keys("Password123")
         self.driver.find_element(By.CSS_SELECTOR, ".fourth").click()
@@ -62,6 +77,20 @@ class TestLogin():
 
         assert "Utente non registrato" == msg_content
 
+
+    def test_wrong_password(self):
+        self.driver.get("http://127.0.0.1:5000/")
+        self.driver.set_window_size(1936, 1048)
+        self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+        self.driver.find_element(By.ID, "login").send_keys("ADeCurtis123@gmail.com")
+        self.driver.find_element(By.ID, "password").send_keys("Password12333")
+        self.driver.find_element(By.CSS_SELECTOR, ".fourth").click()
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'p#errore'))
+        )
+        msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+        assert "password errata" == msg_content
 
     def test_invalid_password(self):
         self.driver.get("http://127.0.0.1:5000/")
@@ -76,6 +105,7 @@ class TestLogin():
         msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
 
         assert "password errata" == msg_content
+
     def test_success(self):
         self.driver.get("http://127.0.0.1:5000/")
         self.driver.set_window_size(1936, 1048)

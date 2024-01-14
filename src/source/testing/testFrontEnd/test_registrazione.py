@@ -2,6 +2,10 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from sqlalchemy_utils import database_exists
+from src import app, db
+from src.source.model.models import User
+
 
 
 class TestRegistrazione():
@@ -82,8 +86,7 @@ class TestRegistrazione():
     self.driver.find_element(By.ID, "login").click()
     self.driver.find_element(By.ID, "login").send_keys("ADeCurtis123@gmail.com")
     self.driver.find_element(By.ID, "password").send_keys("Password123")
-    self.driver.find_element(By.ID, "confirmPassword").send_keys("123456")
-    self.driver.find_element(By.ID, "confirmPassword").send_keys("Password123")
+    self.driver.find_element(By.ID, "confirmPassword").send_keys("1234567899")
     self.driver.find_element(By.ID, "username").send_keys("Antonio de Curtis")
     self.driver.find_element(By.ID, "nome").send_keys("Antonio")
     self.driver.find_element(By.ID, "cognome").send_keys("de Curtis")
@@ -95,6 +98,28 @@ class TestRegistrazione():
     msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
 
     assert "Password and confirm password do not match" == msg_content
+
+  def test_confirm_password_invalid(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.LINK_TEXT, "Register Here").click()
+    self.driver.find_element(By.ID, "login").click()
+    self.driver.find_element(By.ID, "login").send_keys("ADeCurtis123@gmail.com")
+    self.driver.find_element(By.ID, "password").send_keys("Password123")
+    self.driver.find_element(By.ID, "confirmPassword").send_keys("123456")
+    self.driver.find_element(By.ID, "username").send_keys("Antonio de Curtis")
+    self.driver.find_element(By.ID, "nome").send_keys("Antonio")
+    self.driver.find_element(By.ID, "cognome").send_keys("de Curtis")
+    self.driver.find_element(By.ID, "token").send_keys("0e906980a743e9313c848becb8810b2667535e188365e8db829e1c206421d1ec02360127de06b13013782ca87efc3b7487853aba99061df220b825adee92e316")
+    element = self.driver.find_element(By.ID, "submit")
+    self.driver.execute_script("arguments[0].click();", element)
+
+    time.sleep(1)
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Password and confirm password do not match" == msg_content
+
 
   def test_invalid_name(self):
     self.driver.get("http://127.0.0.1:5000/")
@@ -117,6 +142,27 @@ class TestRegistrazione():
 
     assert "invalid field, name must contain only alphabetic characters" == msg_content
 
+  def test_invalid_token(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.LINK_TEXT, "Register Here").click()
+    self.driver.find_element(By.ID, "login").click()
+    self.driver.find_element(By.ID, "login").send_keys("ADeCurtis123@gmail.com")
+    self.driver.find_element(By.ID, "password").send_keys("Password123")
+    self.driver.find_element(By.ID, "confirmPassword").send_keys("Password123")
+    self.driver.find_element(By.ID, "username").send_keys("Antonio de Curtis")
+    self.driver.find_element(By.ID, "nome").send_keys("Antonio")
+    self.driver.find_element(By.ID, "cognome").send_keys("de Curtis")
+    self.driver.find_element(By.ID, "token").send_keys("e92e316")
+    element = self.driver.find_element(By.ID, "submit")
+    self.driver.execute_script("arguments[0].click();", element)
+
+    time.sleep(1)
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Invalid ibmq token" == msg_content
+
   def test_success(self):
     self.driver.get("http://127.0.0.1:5000/")
     self.driver.set_window_size(1936, 1048)
@@ -136,3 +182,46 @@ class TestRegistrazione():
     msg_content = self.driver.find_element(By.CSS_SELECTOR, "label#username").text
 
     assert "Antonio de Curtis" == msg_content
+
+  def test_email_already_used(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.LINK_TEXT, "Register Here").click()
+    self.driver.find_element(By.ID, "login").click()
+    self.driver.find_element(By.ID, "login").send_keys("ADecurtis123@gmail.com")
+    self.driver.find_element(By.ID, "password").send_keys("Password123")
+    self.driver.find_element(By.ID, "confirmPassword").send_keys("Password123")
+    self.driver.find_element(By.ID, "username").send_keys("AntonioDC")
+    self.driver.find_element(By.ID, "nome").send_keys("Antonio")
+    self.driver.find_element(By.ID, "cognome").send_keys("de Curtis")
+    self.driver.find_element(By.ID, "token").send_keys(
+      "0e906980a743e9313c848becb8810b2667535e188365e8db829e1c206421d1ec02360127de06b13013782ca87efc3b7487853aba99061df220b825adee92e316")
+    element = self.driver.find_element(By.ID, "submit")
+    self.driver.execute_script("arguments[0].click();", element)
+    time.sleep(1)
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Email is invalid or already taken" == msg_content
+
+  def test_username_already_used(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.LINK_TEXT, "Register Here").click()
+    self.driver.find_element(By.ID, "login").click()
+    self.driver.find_element(By.ID, "login").send_keys("ADeCurtis@gmail.com")
+    self.driver.find_element(By.ID, "password").send_keys("Password123")
+    self.driver.find_element(By.ID, "confirmPassword").send_keys("Password123")
+    self.driver.find_element(By.ID, "username").send_keys("Antonio de Curtis")
+    self.driver.find_element(By.ID, "nome").send_keys("Antonio")
+    self.driver.find_element(By.ID, "cognome").send_keys("de Curtis1")
+    self.driver.find_element(By.ID, "token").send_keys(
+      "0e906980a743e9313c848becb8810b2667535e188365e8db829e1c206421d1ec02360127de06b13013782ca87efc3b7487853aba99061df220b825adee92e316")
+    element = self.driver.find_element(By.ID, "submit")
+    self.driver.execute_script("arguments[0].click();", element)
+
+    time.sleep(1)
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#errore").text
+
+    assert "Username is invalid or already taken" == msg_content
