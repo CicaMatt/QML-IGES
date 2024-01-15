@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import time
+from unittest.mock import patch
 from zipfile import ZipFile
 from pathlib import Path
 from unittest import TestCase
@@ -12,6 +13,7 @@ from sqlalchemy_utils import database_exists, create_database, drop_database
 
 from src import app, db
 from src.source.model.models import User
+from src.source.utente.UtenteControl import UtenteControl
 from src.source.utils.encryption import encrypt
 
 
@@ -26,6 +28,16 @@ class Test_signup(TestCase):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         with app.app_context():
             db.create_all()
+            user = User(
+                email="mariorossi@gmail.com",
+                password="prosopagnosia",
+                username="MarioRoss",
+                name="Mario",
+                surname="Rossi",
+                token="43a75c20e78cef978267a3bdcdb0207dab62575c3c9da494a1cd344022abc8a326ca1a9b7ee3f533bb7ead73a5f9fe519691a7ad17643eecbe13d1c8c4adccd2"
+            )
+            db.session.add(user)
+            db.session.commit()
 
     def test_signup(self):
         """
@@ -185,8 +197,8 @@ class Test_signup(TestCase):
                 email="ADeCurtis123@gmail.com ",
                 password="Password123",
                 confirmPassword="Password123",
-                nome="Antonio",
-                cognome="",
+                nome="Antonio1",
+                cognome="De Curtis",
                 token='0e906980a743e9313c848becb8810b2667535e188365e8db829e1c206421d1ec02360127de06b13013782ca87efc3b7487853aba99061df220b825adee92e316'
             ),
         )
@@ -208,8 +220,8 @@ class Test_signup(TestCase):
                 email="ADeCurtis123@gmail.com ",
                 password="Password123",
                 confirmPassword="Password123",
-                nome="",
-                cognome="De Curtis",
+                nome="Mario",
+                cognome="",
                 token='0e906980a743e9313c848becb8810b2667535e188365e8db829e1c206421d1ec02360127de06b13013782ca87efc3b7487853aba99061df220b825adee92e316'
             ),
         )
@@ -240,6 +252,61 @@ class Test_signup(TestCase):
         self.assertIsNone(user)
         db.session.commit()
 
+    def test_SetNewPW(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/SetNewPW",
+                data=dict(
+                    email="mariorossi@gmail.com",
+                    pw="qwertyqwerty",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="mariorossi@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 200)
+
+    def test_sendCode_emailNotFoundError(self):
+        """
+        test the sendCode functionality, checking first that the account exists,
+        then modify it and verify that it has been modified correctly
+        """
+        tester = app.test_client()
+        with tester:
+            response = tester.post(
+                "/sendCode",
+                data=dict(
+                    email="inesistente@gmail.com",
+                ),
+            )
+        statuscode = response.status_code
+        self.assertEqual(statuscode, 400)
+
+    @patch('src.source.utente.UtenteControl.UtenteControl.resetPW')
+    def test_email_sending_failure(self, mock_send_email):
+        mock_send_email.side_effect = Exception("Errore durante l'invio dell'email")
+
+        with self.assertRaises(Exception):
+            UtenteControl.resetPW()
 
     def tearDown(self):
         with app.app_context():

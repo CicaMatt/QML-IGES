@@ -83,62 +83,6 @@ class TestUser(TestCase):
         )
         db.session.commit()
 
-    def test_SetNewPW(self):
-        """
-        test the sendCode functionality, checking first that the account exists,
-        then modify it and verify that it has been modified correctly
-        """
-        tester = app.test_client()
-        with tester:
-            response = tester.post(
-                "/SetNewPW",
-                data=dict(
-                    email="mariorossi12@gmail.com",
-                    pw="qwertyqwerty",
-                ),
-            )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-
-    def test_sendCode(self):
-        """
-        test the sendCode functionality, checking first that the account exists,
-        then modify it and verify that it has been modified correctly
-        """
-        tester = app.test_client()
-        with tester:
-            response = tester.post(
-                "/sendCode",
-                data=dict(
-                    email="mariorossi12@gmail.com",
-                ),
-            )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 200)
-
-    def test_sendCode_emailNotFoundError(self):
-        """
-        test the sendCode functionality, checking first that the account exists,
-        then modify it and verify that it has been modified correctly
-        """
-        tester = app.test_client()
-        with tester:
-            response = tester.post(
-                "/sendCode",
-                data=dict(
-                    email="inesistente@gmail.com",
-                ),
-            )
-        statuscode = response.status_code
-        self.assertEqual(statuscode, 400)
-
-    @patch('src.source.utente.UtenteControl.UtenteControl.resetPW')
-    def test_email_sending_failure(self, mock_send_email):
-        mock_send_email.side_effect = Exception("Errore durante l'invio dell'email")
-
-        with self.assertRaises(Exception):
-            UtenteControl.resetPW()
-
     def tearDown(self):
         with app.app_context():
             db.drop_all()
