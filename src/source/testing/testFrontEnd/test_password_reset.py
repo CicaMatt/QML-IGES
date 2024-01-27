@@ -85,11 +85,27 @@ class TestDataset():
 
     assert "No user found associated with the email" == msg_content
 
-  def test_invalid_code(self):
+  def test_invalid_code_len(self):
     self.driver.find_element(By.ID, "email").send_keys("lucacontrasto@gmail.com")
     self.driver.find_element(By.CSS_SELECTOR, ".fourth").click()
     time.sleep(4)
-    self.driver.find_element(By.ID, "code").send_keys("test")
+    self.driver.find_element(By.ID, "code").send_keys("123")
+    time.sleep(1)
+    element = self.driver.find_element(By.ID, "verify")
+    self.driver.execute_script("arguments[0].click();", element)
+
+    WebDriverWait(self.driver, 10).until(
+      EC.presence_of_element_located((By.CSS_SELECTOR, 'p#error'))
+    )
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#error").text
+
+    assert "Invalid Code, retry or come back to receive another email" == msg_content
+
+  def test_invalid_code_match(self):
+    self.driver.find_element(By.ID, "email").send_keys("lucacontrasto@gmail.com")
+    self.driver.find_element(By.CSS_SELECTOR, ".fourth").click()
+    time.sleep(4)
+    self.driver.find_element(By.ID, "code").send_keys("000000")
     time.sleep(1)
     element = self.driver.find_element(By.ID, "verify")
     self.driver.execute_script("arguments[0].click();", element)
@@ -120,6 +136,24 @@ class TestDataset():
 
     assert "Input passwords doesn\'t match or new password length is < 8" == msg_content
 
+  def test_invalid_Confirm_password_len(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.ID, "reset").click()
+    self.driver.find_element(By.ID, "email").send_keys("lucacontrasto@gmail.com")
+    self.driver.find_element(By.ID, "sendButt").click()
+    time.sleep(20)
+    self.driver.find_element(By.ID, "verify").click()
+    self.driver.find_element(By.ID, "newPW").send_keys("qwertyqwerty")
+    self.driver.find_element(By.ID, "newPWConfirm").send_keys("123456")
+    self.driver.find_element(By.ID, "SendPW").click()
+    WebDriverWait(self.driver, 10).until(
+      EC.presence_of_element_located((By.CSS_SELECTOR, 'p#error'))
+    )
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#error").text
+
+    assert "Input passwords doesn\'t match or new password length is < 8" == msg_content
 
   def test_invalid_password_match(self):
     self.driver.get("http://127.0.0.1:5000/")
@@ -139,3 +173,22 @@ class TestDataset():
     msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#error").text
 
     assert "Input passwords doesn\'t match or new password length is < 8" == msg_content
+
+  def test_success(self):
+    self.driver.get("http://127.0.0.1:5000/")
+    self.driver.set_window_size(1936, 1048)
+    self.driver.find_element(By.CSS_SELECTOR, ".user").click()
+    self.driver.find_element(By.ID, "reset").click()
+    self.driver.find_element(By.ID, "email").send_keys("lucacontrasto@gmail.com")
+    self.driver.find_element(By.ID, "sendButt").click()
+    time.sleep(20)
+    self.driver.find_element(By.ID, "verify").click()
+    self.driver.find_element(By.ID, "newPW").send_keys("qwertyqwerty")
+    self.driver.find_element(By.ID, "newPWConfirm").send_keys("qwertyqwerty")
+    self.driver.find_element(By.ID, "SendPW").click()
+    WebDriverWait(self.driver, 10).until(
+      EC.presence_of_element_located((By.CSS_SELECTOR, 'p#msg'))
+    )
+    msg_content = self.driver.find_element(By.CSS_SELECTOR, "p#msg").text
+
+    assert "RESET PASSWORD COMPLETED" == msg_content
