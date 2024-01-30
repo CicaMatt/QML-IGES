@@ -159,7 +159,7 @@ class UtenteControl:
         return render_template("index.html")
 
     @app.route("/sendCode", methods=["GET", "POST"])
-    def resetPW():
+    def sendCode():
         """
         send Verification Code
             :return: redirect to preview page

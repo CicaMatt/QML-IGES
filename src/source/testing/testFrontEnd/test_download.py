@@ -53,7 +53,6 @@ class TestTestdownload():
       db.session.add(salvataggiodatabase)
       db.session.commit()
 
-  
   def teardown_method(self, method):
     self.driver.quit()
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root@127.0.0.1/quantumknn_db"
@@ -63,7 +62,7 @@ class TestTestdownload():
         db.session.commit()
         db.session.delete(User.query.filter_by(email="ADeCurtis123@gmail.com").first())
         db.session.commit()
-  
+
   def test_download_success(self):
     self.driver.get("http://127.0.0.1:5000/")
     self.driver.set_window_size(1936, 1048)
@@ -78,6 +77,6 @@ class TestTestdownload():
     self.driver.find_element(By.ID, "openExperiment").click()
     self.driver.find_element(By.ID, "openExperiment").click()
     time.sleep(2)
-    self.driver.find_element(By.CSS_SELECTOR, ".fa-download").click()
-    time.sleep(4)
+    self.driver.find_element(By.CSS_SELECTOR, "button[value='1']").click()
+    time.sleep(2)
     assert os.path.isfile(pathlib.Path.home() / "Download" / "Experiment_1.zip")
